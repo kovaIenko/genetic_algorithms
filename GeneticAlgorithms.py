@@ -10,8 +10,7 @@ def selRoulette(list):
     for i, ch in enumerate(list):
         prob = healthOf(ch)/sum
         probability.insert(i, prob)
-  # we have the list of probabilities
-
+   # we have the list of probabilities
     return list
 
 ### execute the mutation
@@ -23,14 +22,6 @@ def mutation(list, percentage):
     #i think we don't need to save the indexes of gens which we changed
     return (list, indexes)
 
-
-# generate the population by the 1 method
-def init1(lenCh, numbs):
-    print()
-
-# generate the population by 2 method
-def init2(lenCh, numbs):
-    print()
 
 # generate the population by the 3 method
 def init3(lenCh, numbs):
@@ -70,7 +61,7 @@ def calcDistance(a, b):
     return dim
 
 def execution(iterations):
-    list = init1(l, N)
+
     print(iterations)
 
 

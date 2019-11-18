@@ -1,6 +1,8 @@
+
 import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import matplotlib.pyplot as plt
+from collections import Counter
 
 import scipy.spatial
 
@@ -26,6 +28,86 @@ def generate_population(l, N, X, Y, coding="binary"):
 In order to calculate the Hamming distance between two strings, we perform their XOR operation and then count the total number of 1s in the resultant string.
 '''
 
+
+l = 8
+N = 100
+
+# RWS
+def selRoulette(list):
+    sum = sumHealth(list)
+    probability = []
+    for i, ch in enumerate(list):
+        prob = healthOf(ch)/sum
+        probability.insert(i, prob)
+  # we have the list of probabilities
+
+    return list
+
+### execute the mutation
+### indexes = list of pointers to chromosomes which were mutated
+def mutation(list, percentage):
+    count = list.size*l
+    indexes = []
+    #generate the indexes which chromosomes are mutated
+    #i think we don't need to save the indexes of gens which we changed
+    return (list, indexes)
+
+
+# generate the population by the 1 method
+def init1(lenCh, numbs):
+    print()
+
+# generate the population by 2 method
+def init2(lenCh, numbs):
+    print()
+
+# generate the population by the 3 method
+def init3(lenCh, numbs):
+    print()
+
+
+# calculate the sum of all population
+def sumHealth(list):
+    sum = 0
+    for ch in list:
+        sum += healthOf(ch)
+    return sum
+
+def healthOf(ch):
+   return ch.count('0')
+
+# we do it on the beginning and after mutation
+def calcHealth(list, iteration, listMutated):
+
+    # if only we start a lifecycle
+    if iteration == 0:
+        for i in list:
+            print()
+
+# calculate the number different unique distances [ 1:3, 2:7, ...]
+def calcNumbDistances(list):
+    map = Counter(list)
+    return dict(map)
+
+# distance between two chromosome
+# probably it can be changed, method compares the id of characters of chromosomes
+def calcDistance(a, b):
+    dim = 0
+    for x, y in zip(a, b):
+            if id(x) != id(y):
+                dim += 1
+    return dim
+
+def execution(iterations):
+    list = init1(l, N)
+    print(iterations)
+
+
+# 0 -> 1 or 1 -> 0
+def turnOverGen(gen):
+    return 0 if gen == 1 else 1
+
+execution(100)
 
 def calculate_chromosome_fitness(first_chromosome, second_chromosome, fitness_func="hamming distance"):
     if fitness_func == "hamming distance":

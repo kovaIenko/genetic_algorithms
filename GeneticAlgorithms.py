@@ -1,8 +1,6 @@
 import random
 
 import numpy as np  # linear algebra
-import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
-import matplotlib.pyplot as plt
 from collections import Counter
 
 # generate initial population of size N. each chromosome has a length l
@@ -41,21 +39,21 @@ def compare_chromosome_fitness(first_chromosome, second_chromosome, fitness_func
         return None
 
 # calculate the sum of all population
-def sumHealth(list):
-    sum = 0
+def sum_health(list):
+    suum = 0
     for ch in list:
-        sum += healthOf(ch)
-    return sum
+        suum += healthOf(ch)
+    return suum
 
 
 def healthOf(ch):
-    return ch.count('0')
+    return np.count_nonzero(ch == 0)
 
 
 # RWS
 
 def selRoulette(list):
-    sumH = sumHealth(list)
+    sumH = sum_health(list)
     probability = []
     chosen = []
     for i, ch in enumerate(list):
@@ -75,6 +73,7 @@ def selRoulette(list):
                 break
 
     return chosen
+
 
 # 0 -> 1 or 1 -> 0
 def turnOverGen(ch, indOfGen):
@@ -105,7 +104,7 @@ def mutation(list, percentage):
         if u < l - 1:
             indOfCh = 0
             if u != 0:
-              indOfGen = u - 1
+                indOfGen = u - 1
             else:
                 indOfGen = u
         else:
@@ -117,22 +116,9 @@ def mutation(list, percentage):
     return list, indexes
 
 
-
-
-#print(mutation(["01010", "10101", "11101", "00111", "00000"], 0))
-
-
 # generate the population by the 3 method
 def init3(lenCh, numbs):
     print()
-
-
-# we do it on the beginning and after mutation
-def calcHealth(list, iteration, listMutated):
-    # if only we start a lifecycle
-    if iteration == 0:
-        for i in list:
-            print()
 
 
 # calculate the number different unique distances [ 1:3, 2:7, ...]
@@ -141,22 +127,22 @@ def calcNumbDistances(list):
     return dict(map)
 
 
-# distance between two chromosome
-# probably it can be changed, method compares the id of characters of chromosomes
-def calcDistance(a, b):
-    dim = 0
-    for x, y in zip(a, b):
-        if id(x) != id(y):
-            dim += 1
-    return dim
+def hamming(chaine1, chaine2):
+    return sum(c1 != c2 for c1, c2 in zip(chaine1, chaine2))
 
 
-def execution(iterations):
-    print(iterations)
+# return the map [ distance : frequency ]
+def calc_all_distances(list, N, l):
+    frequency = {new_list: 0 for new_list in range(l + 1)}
+    for i in range(0, N):
+        for j in range(i + 1, N):
+            dis = hamming(list[i], list[j])
+            frequency[dis] = frequency.get(dis) + 1
+    return frequency
 
+def healthMean(list, N):
+    return sum_health(list) / N
 
-
-#execution(100)
 
 
 ### execute the mutation
@@ -173,16 +159,60 @@ def tournament_selection(t):
 
 # The Hamming distance between 1-D arrays `u` and `v`, is simply the
 #     proportion of disagreeing components in `u` and `v`
-l = 8
-N = 100
 
 
-'''# testing
-pop = generate_population(l, N, 0, 1)
-print(pop)
-sample = pop[:-3:-1]  # take two last chromosomes from population
-print("Chromosomes: \n", sample)
-proportion_of_different_genes = scipy.spatial.distance.hamming(sample[0], sample[1])
-print("{}% of different genes".format(proportion_of_different_genes * 100))
-print("The number of different genes is {0}".format(int(proportion_of_different_genes * l)))
-'''
+# test
+
+'''  sample = pop[:-3:-1]  # take two last chromosomes from population
+  print("Chromosomes: \n", sample)
+  proportion_of_different_genes = scipy.spatial.distance.hamming(sample[0], sample[1])
+  print("{}% of different genes".format(proportion_of_different_genes * 100))
+  print("The number of different genes is {0}".format(int(proportion_of_different_genes * l)))
+  '''
+
+import xlsxwriter
+
+
+def save_to_file(dict):
+    print(dict)
+    workbook = xlsxwriter.Workbook('data.xls')
+    worksheet = workbook.add_worksheet()
+
+    row = 0
+    col = 0
+    for key in dict.keys():
+        worksheet.write(row, col, key)
+        col = col + 1
+
+    row = row+1
+    col = 0
+    for key in dict.keys():
+        worksheet.write(row, col, dict.get(key))
+        col = col+1
+
+    workbook.close()
+
+
+CONST_STOP_ALGORITHM = 200000
+CONST_STOP_ALGORITHM_BY_MEAN_HEALTH = 0.0001
+
+
+def execution(l, N):
+    pop = generate_population(l, N, 0, 1)
+    histogram_data_arr = []
+
+    previous_mean_health = healthMean(pop, N)
+    for i in range(N):
+        current_mean_health = healthMean(pop, N)
+        if i > CONST_STOP_ALGORITHM or current_mean_health - previous_mean_health > CONST_STOP_ALGORITHM_BY_MEAN_HEALTH:
+            break
+        #####################################
+        #  EVALUATION
+        #####################################
+        if i > 9 and i % 10 == 0:  # there we save the data for histogram
+            save_to_file(calc_all_distances(pop, N, l))
+
+
+l = 3
+N = 11
+execution(l, N);

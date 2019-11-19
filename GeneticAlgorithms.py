@@ -5,9 +5,6 @@ import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import matplotlib.pyplot as plt
 from collections import Counter
 
-import scipy.spatial
-
-
 # generate initial population of size N. each chromosome has a length l
 
 # X is a percentage of chromosomes that contain only 0
@@ -25,11 +22,23 @@ def generate_population(l, N, X, Y, coding="binary"):
     return general_population
 
 
+
 '''
 Comparing two binary strings of equal length, Hamming distance is the number of bit positions in which the two bits are different.
 In order to calculate the Hamming distance between two strings, we perform their XOR operation and then count the total number of 1s in the resultant string.
 '''
 
+def compare_chromosome_fitness(first_chromosome, second_chromosome, fitness_func="hamming distance"):
+    if fitness_func == "hamming distance":
+        result = []
+        if len(first_chromosome) == len(second_chromosome):
+            length = len(first_chromosome)
+            for i in range(length):
+                result.append(first_chromosome[i] ^ second_chromosome[i])
+            count_zeros = sum(map(lambda x: x == 0, result))
+            return count_zeros
+    else:
+        return None
 
 # calculate the sum of all population
 def sumHealth(list):
@@ -110,7 +119,7 @@ def mutation(list, percentage):
 
 
 
-print(mutation(["01010", "10101", "11101", "00111", "00000"], 0))
+#print(mutation(["01010", "10101", "11101", "00111", "00000"], 0))
 
 
 # generate the population by the 3 method
@@ -147,15 +156,7 @@ def execution(iterations):
 
 
 
-execution(100)
-
-
-def calculate_chromosome_fitness(first_chromosome, second_chromosome, fitness_func="hamming distance"):
-    if fitness_func == "hamming distance":
-        if len(first_chromosome) == len(second_chromosome):
-            pass
-    else:
-        pass
+#execution(100)
 
 
 ### execute the mutation

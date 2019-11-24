@@ -2,6 +2,7 @@ import random
 
 import numpy as np  # linear algebra
 from collections import Counter
+from decimal import Decimal
 from operator import attrgetter
 
 
@@ -33,7 +34,6 @@ def sum_health(list):
     suum = 0
     for ch in list:
         suum += healthOf(ch)
-
     return suum
 
 
@@ -75,25 +75,6 @@ print("----------------")
 '''
 
 
-'''
-def selRoulett(individuals, N):
-    individuals = sorted(individuals, key=healthOf)
-    sum_fits = sum_health(individuals)
-    chosen = []
-    for i in range(N):
-        u = random.random() * sum_fits
-        sum_ = 0
-        for ind in individuals:
-            sum_ += healthOf(ind)
-            if sum_ > u:
-                chosen.append(ind)
-                break
-    return chosen
-
-'''
-
-
-
 # 0 -> 1 or 1 -> 0
 def turnOverGen(ch, indOfGen):
     if ch[indOfGen] == 1:
@@ -103,7 +84,7 @@ def turnOverGen(ch, indOfGen):
     return ch
 
 
-def mutation(list, percentage):
+def mutation(list, percentage, l):
     #print(percentage)
     # pm = px + 0.2*px
     # pm = px - 0.2*px
@@ -113,6 +94,7 @@ def mutation(list, percentage):
     count_ = len(list) * l
     #print(count_)
     numbOfMut = count_ * percentage
+    #print("NumMut: ")
     #print(numbOfMut)
     indexes = []
     # generate the indexes which chromosomes will be mutated
@@ -137,20 +119,13 @@ def mutation(list, percentage):
 def init3(lenCh, numbs):
     print()
 
-
-# calculate the number different unique distances [ 1:3, 2:7, ...]
-def calcNumbDistances(list):
-    map = Counter(list)
-    return dict(map)
-
-
 def hamming(chaine1, chaine2):
     return sum(c1 != c2 for c1, c2 in zip(chaine1, chaine2))
 
 
 # return the map [ distance : frequency ]
 def calc_all_distances(list, N, l):
-    frequency = {new_list: 0 for new_list in range(l + 1)}
+    frequency = { new_list: 0 for new_list in range(l + 1)}
     for i in range(0, N):
         for j in range(i + 1, N):
             dis = hamming(list[i], list[j])
@@ -162,7 +137,7 @@ def calc_all_distances(list, N, l):
 
 
 def healthMean(list, N):
-    return sum_health(list) / N
+    return  sum_health(list) / N
 
 
 ### execute the mutation
@@ -192,62 +167,79 @@ def tournament_selection(t):
 
 import xlsxwriter
 
-columns = 0
 
-
-def save_to_file(dict, col):
-    workbook = xlsxwriter.Workbook('data.xls')
-    worksheet = workbook.add_worksheet()
-
-    row = 0
-    for key in dict.keys():
-        worksheet.write(row, col, key)
-        col = col + 1
-
-    row = row + 1
+def save_to_file(worksheet, dict, iterate):
+    print(iterate)
+    row = int(iterate / CONST_NUMB_GETTING_INFO)
+    col = 0
+    if row == 0:
+      for key in dict.keys():
+         worksheet.write(row, col, key)
+         col = col + 1
+      row += 1
     col = 0
     for key in dict.keys():
         worksheet.write(row, col, dict.get(key))
         col = col + 1
 
-    workbook.close()
+
 
 
 CONST_STOP_ALGORITHM = 200000
 CONST_STOP_ALGORITHM_BY_MEAN_HEALTH = 0.0001
+CONST_NUMB_GETTING_INFO = 10
+
+
+def should_be_stopped(worksheet, pop, N, l, i, sum_mean_health):
+    if i + 1 > CONST_STOP_ALGORITHM:
+        print("Algorithm was stopped")
+        return True
+    if i % CONST_NUMB_GETTING_INFO == 0 and i != 0:  # each 11n iterations
+        save_to_file(worksheet, calc_all_distances(pop, N, l), i)
+        current_mean_health = round(Decimal(healthMean(pop, N)), 4)
+        print("curr")
+        print(current_mean_health)
+        print("last")
+        last_10_mean_health = round(sum_mean_health / CONST_NUMB_GETTING_INFO, 4)
+        print(last_10_mean_health)
+        if current_mean_health - last_10_mean_health > CONST_STOP_ALGORITHM_BY_MEAN_HEALTH:
+            print("Algorithm was stopped")
+            return True
+    return False
+
+
+
+
 
 def execution(l, N):
+    workbook = xlsxwriter.Workbook('data.xls')
+    worksheet = workbook.add_worksheet()
+
     pop = generate_population(l, N, 0, 1)
     print(pop)
-
-    px = 1 / (10 * l)
-    pm = px
-    histogram_data_arr = []
-    previous_mean_health = healthMean(pop, N)
-    print(previous_mean_health)
+    pm = 1 / (10 * l)
+    sum_mean_health = round(Decimal(0), 4)   #healthMean(pop, N)
     for i in range(N):
-        current_mean_health = healthMean(pop, N)
-        print(current_mean_health)
-        if i > CONST_STOP_ALGORITHM or current_mean_health - previous_mean_health > CONST_STOP_ALGORITHM_BY_MEAN_HEALTH:
-            print("Algorithm was stopped")
+        # =================================================================================
+         #print("true " + str(i) + "   " + str(np.round(Decimal(healthMean(pop, N)), 4)))
+
+        if should_be_stopped(worksheet, pop, N, l, i, sum_mean_health):
+            sum_mean_health = 0
             break
-        previous_mean_health = current_mean_health
-        #####################################
-        #  EVALUATION
-        #####################################
-        if i > 9 and i % 10 == 0:  # there we save the data for histogram
-              save_to_file(calc_all_distances(pop, N, l), columns)
-        # selection
+        sum_mean_health = sum_mean_health + round(Decimal(healthMean(pop, N)), 4)
+
+        # =================================================================================
         pop = selRoulette(pop)
         print("after roulette")
         print(pop)
-        pop, chs_were_muted = mutation(pop, pm)
+        pop, chs_were_muted = mutation(pop, pm, l)
         print("after mutation")
         print(chs_were_muted)
         print(pop)
         print("- - -  - - - - - - - -- - - - - - - -- - -- -- - - - - - - - ")
+    workbook.close()
 
 
-l = 8
-N = 4
+l = 10
+N = 21
 execution(l, N)

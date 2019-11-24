@@ -168,14 +168,29 @@ def healthMean(list, N):
 ### execute the mutation
 ### indexes = list of pointers to chromosomes which were mutated
 
-def tournament_selection(t):
-    if t == 2:
-        pass
-    elif t == 4:
-        pass
-    elif t == 12:
-        pass
+def calculate_individual_fitness(chromosome):
+    return sum(map(lambda x: x == 0, chromosome))
 
+
+# We select random t chromosomes, compare them with each other, choose the fittest one and send it to the mating pool. Then chromosomes are returned to the initial population
+# The process continues until we select N chromosomes for a new population
+def tournament_selection(population, t):
+    mating_pool = []
+    N = len(population)
+    for chromosome in population:
+        random_chromosomes = []
+        health_of_random = []
+        for i in range(0, t):
+            rand_index = np.random.randint(0, N)
+            random_chromosomes.append(population[rand_index])
+            health_of_random.append(calculate_individual_fitness(random_chromosomes[i]))
+        ##print(random_chromosomes)
+        index_of_fittest = health_of_random.index(max(health_of_random))
+        mating_pool.append(random_chromosomes[index_of_fittest])
+    return mating_pool
+
+# Testing:
+##print(tournament_selection([[0, 1, 1], [1, 1, 1]], 2))
 
 # The Hamming distance between 1-D arrays `u` and `v`, is simply the
 #     proportion of disagreeing components in `u` and `v`

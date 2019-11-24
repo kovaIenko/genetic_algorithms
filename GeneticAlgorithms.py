@@ -2,6 +2,7 @@ import random
 
 import numpy as np  # linear algebra
 from collections import Counter
+from operator import attrgetter
 
 
 # generate initial population of size N. each chromosome has a length l
@@ -32,62 +33,89 @@ def sum_health(list):
     suum = 0
     for ch in list:
         suum += healthOf(ch)
+
     return suum
 
 
 def healthOf(ch):
     return np.count_nonzero(ch == 0)
 
-
 # RWS
 
 def selRoulette(list):
     sumH = sum_health(list)
+    list = sorted(list, key=healthOf)
+   # print(list)
     probability = []
     chosen = []
-    for i, ch in enumerate(list):
+    for ch in list:
         prob = healthOf(ch) / sumH
         probability.append(prob)
-
-    probability.sort()
-
-    for i in range(len(probability)):
-
+  #  print(probability)
+    cumsum = np.cumsum(probability)
+  #  print(cumsum)
+    for i in list:
         u = random.random()
+     #   print("u: "+ str(u))
+        for idx, val in enumerate(cumsum):
+            if val >= u:
+          #      print(idx)
+          #      print(list[idx])
+                chosen.append(list[idx].copy())
+                break
+    #print(chosen)
+    return chosen
+
+'''
+l = 4
+N = 4
+pop = generate_population(l, N, 0, 1)
+print(selRoulette(pop))
+print("----------------")
+'''
+
+
+'''
+def selRoulett(individuals, N):
+    individuals = sorted(individuals, key=healthOf)
+    sum_fits = sum_health(individuals)
+    chosen = []
+    for i in range(N):
+        u = random.random() * sum_fits
         sum_ = 0
-        for ind in probability:
-            sum_ += probability[ind]
+        for ind in individuals:
+            sum_ += healthOf(ind)
             if sum_ > u:
                 chosen.append(ind)
                 break
-
     return chosen
+
+'''
+
 
 
 # 0 -> 1 or 1 -> 0
 def turnOverGen(ch, indOfGen):
-    chList = list(ch)
-    if chList[indOfGen] == '1':
-        chList[indOfGen] = '0'
+    if ch[indOfGen] == 1:
+        ch[indOfGen] = 0
     else:
-        chList[indOfGen] = '1'
-    return "".join(chList)
+        ch[indOfGen] = 1
+    return ch
 
 
 def mutation(list, percentage):
-    l = 5
-    px = 1 / (10 * l)
-    pm = 0.1
+    #print(percentage)
     # pm = px + 0.2*px
     # pm = px - 0.2*px
     # pm = px/2
     # pm = px/10
     # pm = px/100
     count_ = len(list) * l
-    numbOfMut = count_ * pm
-    print(list)
+    #print(count_)
+    numbOfMut = count_ * percentage
+    #print(numbOfMut)
     indexes = []
-    # generate the indexes which chromosomes are mutated
+    # generate the indexes which chromosomes will be mutated
     for i in range(int(numbOfMut)):
         u = int(random.random() * count_)
         if u < l - 1:
@@ -103,9 +131,6 @@ def mutation(list, percentage):
         list[indOfCh] = turnOverGen(currCh, indOfGen)
         indexes.append(indOfCh)
     return list, indexes
-
-
-# print(mutation(["01010", "10101", "11101", "00111", "00000"], 0))
 
 
 # generate the population by the 3 method
@@ -167,23 +192,23 @@ def tournament_selection(t):
 
 import xlsxwriter
 
+columns = 0
 
-def save_to_file(dict):
-    print(dict)
+
+def save_to_file(dict, col):
     workbook = xlsxwriter.Workbook('data.xls')
     worksheet = workbook.add_worksheet()
 
     row = 0
-    col = 0
     for key in dict.keys():
         worksheet.write(row, col, key)
         col = col + 1
 
-    row = row+1
+    row = row + 1
     col = 0
     for key in dict.keys():
         worksheet.write(row, col, dict.get(key))
-        col = col+1
+        col = col + 1
 
     workbook.close()
 
@@ -191,23 +216,38 @@ def save_to_file(dict):
 CONST_STOP_ALGORITHM = 200000
 CONST_STOP_ALGORITHM_BY_MEAN_HEALTH = 0.0001
 
-
 def execution(l, N):
     pop = generate_population(l, N, 0, 1)
-    histogram_data_arr = []
+    print(pop)
 
+    px = 1 / (10 * l)
+    pm = px
+    histogram_data_arr = []
     previous_mean_health = healthMean(pop, N)
+    print(previous_mean_health)
     for i in range(N):
         current_mean_health = healthMean(pop, N)
+        print(current_mean_health)
         if i > CONST_STOP_ALGORITHM or current_mean_health - previous_mean_health > CONST_STOP_ALGORITHM_BY_MEAN_HEALTH:
+            print("Algorithm was stopped")
             break
+        previous_mean_health = current_mean_health
         #####################################
         #  EVALUATION
         #####################################
         if i > 9 and i % 10 == 0:  # there we save the data for histogram
-            save_to_file(calc_all_distances(pop, N, l))
+              save_to_file(calc_all_distances(pop, N, l), columns)
+        # selection
+        pop = selRoulette(pop)
+        print("after roulette")
+        print(pop)
+        pop, chs_were_muted = mutation(pop, pm)
+        print("after mutation")
+        print(chs_were_muted)
+        print(pop)
+        print("- - -  - - - - - - - -- - - - - - - -- - -- -- - - - - - - - ")
 
 
-l = 3
-N = 11
-execution(l, N);
+l = 8
+N = 4
+execution(l, N)

@@ -5,7 +5,6 @@ from collections import Counter
 from decimal import Decimal
 from operator import attrgetter
 
-
 # generate initial population of size N. each chromosome has a length l
 
 # X is a percentage of chromosomes that contain only 0
@@ -23,11 +22,23 @@ def generate_population(l, N, X, Y, coding="binary"):
     return general_population
 
 
+
 '''
 Comparing two binary strings of equal length, Hamming distance is the number of bit positions in which the two bits are different.
 In order to calculate the Hamming distance between two strings, we perform their XOR operation and then count the total number of 1s in the resultant string.
 '''
 
+def compare_chromosome_fitness(first_chromosome, second_chromosome, fitness_func="hamming distance"):
+    if fitness_func == "hamming distance":
+        result = []
+        if len(first_chromosome) == len(second_chromosome):
+            length = len(first_chromosome)
+            for i in range(length):
+                result.append(first_chromosome[i] ^ second_chromosome[i])
+            count_zeros = sum(map(lambda x: x == 0, result))
+            return count_zeros
+    else:
+        return None
 
 # calculate the sum of all population
 def sum_health(list):
@@ -132,12 +143,9 @@ def calc_all_distances(list, N, l):
             frequency[dis] = frequency.get(dis) + 1
     return frequency
 
-
-# print(calc_all_distances(["01010", "10101"], 2, 5))
-
-
 def healthMean(list, N):
     return  sum_health(list) / N
+
 
 
 ### execute the mutation

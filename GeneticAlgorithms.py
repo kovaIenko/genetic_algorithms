@@ -241,6 +241,7 @@ def execution(l, N):
         if should_be_stopped(worksheet, pop, N, l, i, sum_mean_health):
             sum_mean_health = 0
             break
+
         sum_mean_health = sum_mean_health + round(Decimal(healthMean(pop, N)), 4)
 
         # =================================================================================

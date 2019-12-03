@@ -4,7 +4,15 @@ import numpy as np  # linear algebra
 from collections import Counter
 from decimal import *
 from operator import attrgetter
+
 getcontext().prec = 4
+import scipy.spatial.distance
+import timeit  # for measuring time
+import matplotlib.pyplot as plt
+
+
+class UnknownCoding(Exception):
+    pass
 
 
 # generate initial population of size N. each chromosome has a length l
@@ -20,18 +28,19 @@ def generate_population(l, N, X, Y, coding="binary"):
         uniform_population = np.random.randint(0, 2, (y, l))
         general_population = np.concatenate((population_with_zeros, uniform_population), axis=0)
     else:
-        return None
+        raise UnknownCoding(
+            "The generation function hasn't been implemented for '{0}' chromosomes coding".format(coding))
     return general_population
 
 
-'''
-Comparing two binary strings of equal length, Hamming distance is the number of bit positions in which the two bits are different.
-In order to calculate the Hamming distance between two strings, we perform their XOR operation and then count the total number of 1s in the resultant string.
-'''
+# Calculate the health of all population (alternative method)
+def population_health(pop):
+    return sum(map(calculate_individual_fitness, pop))
 
 
 def healthOf(ch):
     return np.count_nonzero(ch == 0)
+
 
 # RWS
 
@@ -41,10 +50,10 @@ def selRoulette(list, list_of_health):
     probability = []
     chosen = []
     for ch in list:
-        prob = Decimal(healthOf(ch))/ Decimal(sumH)
+        prob = Decimal(healthOf(ch)) / Decimal(sumH)
         probability.append(prob)
     cumsum = np.cumsum(probability)
-    cumsum[len(cumsum)-1] = Decimal(1.)
+    cumsum[len(cumsum) - 1] = Decimal(1.)
     for i, val in enumerate(list):
         u = random.random()
         for idx, val in enumerate(cumsum):
@@ -53,6 +62,7 @@ def selRoulette(list, list_of_health):
                 chosen.append(list[idx].copy())
                 break
     return chosen, list_of_health
+
 
 '''
 l = 4
@@ -73,17 +83,17 @@ def turnOverGen(ch, indOfGen):
 
 
 def mutation(list, percentage, l, list_of_health):
-    #print(percentage)
+    # print(percentage)
     # pm = px + 0.2*px
     # pm = px - 0.2*px
     # pm = px/2
     # pm = px/10
     # pm = px/100
     count_ = len(list) * l
-    #print(count_)
+    # print(count_)
     numbOfMut = count_ * percentage
-    #print("NumMut: ")
-    #print(numbOfMut)
+    # print("NumMut: ")
+    # print(numbOfMut)
     indexes = []
     # generate the indexes which chromosomes will be mutated
     for i in range(int(numbOfMut)):
@@ -109,13 +119,30 @@ def mutation(list, percentage, l, list_of_health):
 def init3(lenCh, numbs):
     print()
 
+
+'''
+Comparing two binary strings of equal length, Hamming distance is the number of bit positions in which the two bits are different.
+In order to calculate the Hamming distance between two strings, we perform their XOR operation and then count the total number of 1s in the resultant string.
+'''
+
+
 def hamming(chaine1, chaine2):
     return sum(c1 != c2 for c1, c2 in zip(chaine1, chaine2))
 
 
-# return the map [ distance : frequency ]
+# Alternative method (using a third-party module)
+def hamming_distance(a, b):
+    if len(a) != len(b):  # Checking if chromosomes have equal length
+        return None
+    overall_genes = len(a)
+    ratio_of_different_genes = scipy.spatial.distance.hamming(a, b)
+    number_of_different_genes = int(ratio_of_different_genes * overall_genes)
+    return number_of_different_genes
+
+
+# Return the dictionary of the form { distance : frequency }
 def calc_all_distances(list, N, l):
-    frequency = { new_list: 0 for new_list in range(l + 1)}
+    frequency = {new_list: 0 for new_list in range(l + 1)}
     for i in range(0, N):
         for j in range(i + 1, N):
             dis = hamming(list[i], list[j])
@@ -125,9 +152,16 @@ def calc_all_distances(list, N, l):
 
 # print(calc_all_distances(["01010", "10101"], 2, 5))
 
+# Mean health of the population
 
 def healthMean(N, list_health):
-    return sum(list_health)/N
+    return sum(list_health) / N
+
+
+# Alternative method
+
+def mean_health_of_population(pop):
+    return population_health(pop) / len(pop)
 
 
 ### execute the mutation
@@ -154,21 +188,22 @@ def tournament_selection(population, t):
         mating_pool.append(random_chromosomes[index_of_fittest])
     return mating_pool
 
-# Testing:
-##print(tournament_selection([[0, 1, 1], [1, 1, 1]], 2))
 
-# The Hamming distance between 1-D arrays `u` and `v`, is simply the
-#     proportion of disagreeing components in `u` and `v`
+# Save a histogram to png file with all the parameters specified (except mutation)
+def build_histogram(pop, N, l, iter_num, x, y):
+    distances = calc_all_distances(pop, N, l)
+    plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
+    plt.xticks(list(distances.keys()))
+    plt.savefig("N={0}_l={1}_iter={2}_X={3}%_Y={4}%.png".format(N, l, iter_num, x, y))
 
 
-# test
+# Build a line plot with mean health for each iteration and save to png
 
-'''  sample = pop[:-3:-1]  # take two last chromosomes from population
-  print("Chromosomes: \n", sample)
-  proportion_of_different_genes = scipy.spatial.distance.hamming(sample[0], sample[1])
-  print("{}% of different genes".format(proportion_of_different_genes * 100))
-  print("The number of different genes is {0}".format(int(proportion_of_different_genes * l)))
-  '''
+def build_line_graph(health_values, N, l, x, y):
+    plt.clf()
+    plt.plot(health_values)
+    plt.savefig("health-over-generations_N={0}_l={1}_X={2}%_Y={3}%.png".format(N, l, x, y))
+
 
 import xlsxwriter
 
@@ -177,10 +212,10 @@ def save_to_file(worksheet, dict, iterate):
     row = int(iterate / CONST_NUMB_GETTING_INFO) - 1
     col = 0
     if row == 0:
-      for key in dict.keys():
-         worksheet.write(row, col, key)
-         col = col + 1
-      row += 1
+        for key in dict.keys():
+            worksheet.write(row, col, key)
+            col = col + 1
+        row += 1
     col = 0
     for key in dict.keys():
         worksheet.write(row, col, dict.get(key))
@@ -188,7 +223,7 @@ def save_to_file(worksheet, dict, iterate):
 
 
 CONST_STOP_ALGORITHM = 200000
-CONST_STOP_ALGORITHM_BY_MEAN_HEALTH = 0.0001
+PRECISION = 0.0001
 CONST_NUMB_GETTING_INFO = 10
 
 
@@ -196,16 +231,18 @@ def should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, current_mean_hea
     if i % CONST_NUMB_GETTING_INFO == 0 and i != 0:  # each 11n iterations
         # save_to_file(worksheet, calc_all_distances(pop, N, l), i)
         last_10_mean_health = sum_mean_health / CONST_NUMB_GETTING_INFO
-        if Decimal(current_mean_health) - Decimal(last_10_mean_health) < CONST_STOP_ALGORITHM_BY_MEAN_HEALTH:
+        if Decimal(current_mean_health) - Decimal(last_10_mean_health) < PRECISION:
             print("Algorithm was stopped: there is mistake ")
             return True
     return False
+
 
 def init_health_list(list):
     list_of_health = []
     for ch in list:
         list_of_health.append(healthOf(ch))
     return list_of_health
+
 
 def execution(l, N):
     workbook = xlsxwriter.Workbook('data.xls')
@@ -235,4 +272,3 @@ def execution(l, N):
 l = 10
 N = 200000
 execution(l, N)
-

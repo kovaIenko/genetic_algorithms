@@ -272,3 +272,55 @@ def execution(l, N):
 l = 10
 N = 200000
 execution(l, N)
+
+
+def run_genetic_algorithm(l, N, X, Y):
+    pop = generate_population(l, N, X, Y)
+    counter = 0
+    x = X * 100
+    y = Y * 100
+    health_during_generations = []
+    for i in range(1, CONST_STOP_ALGORITHM + 1):
+        health_of_each_individual = list(map(calculate_individual_fitness, pop))
+        print("# Iteration number {0}".format(i))
+        # print("Current population:")
+        # print(pop)
+        # print("Health of each chromosome: ")
+        # print(health_of_each_individual)
+        previous_mean_health = mean_health_of_population(pop)
+        print("Previous mean health: ")
+        print(previous_mean_health)
+        #if i % 10 == 0:
+            #build_histogram(pop, N, l, i, x, y)
+        pop = selRoulette(pop)
+        pop, mutated_chromosomes = mutation(pop, 0.01, l)
+        # print("Mutated: ")
+        # print(mutated_chromosomes)
+        # print("Unique values: ")
+        chromosomes_numbers = set(mutated_chromosomes)
+        # print(set(mutated_chromosomes))
+        print("{0} of {1} chromosomes has mutated".format(len(chromosomes_numbers), N))
+        pop = np.asarray(pop)  # convert list to numpy array
+        # Recalculate health of mutated chromosomes only
+        for j in chromosomes_numbers:
+            health_of_each_individual[j] = calculate_individual_fitness(pop[j])
+        current_mean_health = np.mean(health_of_each_individual)
+        print("Mean health after mutation:")
+        print(current_mean_health)
+        health_during_generations.append(current_mean_health)
+        if np.abs(previous_mean_health - current_mean_health) < PRECISION and i > 1:
+            counter = counter + 1
+        else:
+            counter = 0
+        if counter >= 10:
+            print("Mean health stays the same during 10 iterations -> algorithm was stopped")
+            print("Iteration number: ", counter)
+            build_line_graph(health_during_generations, N, l, x, y)
+            break
+        print("Go to the next iteration")
+        if i == CONST_STOP_ALGORITHM:
+            build_line_graph(health_during_generations, N, l, x, y)
+        # print()
+
+
+#run_genetic_algorithm(10, 100, 1, 0)

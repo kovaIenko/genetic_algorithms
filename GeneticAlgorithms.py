@@ -223,7 +223,7 @@ def save_to_file(worksheet, dict, iterate):
 
 
 CONST_STOP_ALGORITHM = 200000
-PRECISION = 0.0001
+PRECISION = 0.01
 CONST_NUMB_GETTING_INFO = 10
 
 
@@ -323,4 +323,4 @@ def run_genetic_algorithm(l, N, X, Y):
         # print()
 
 
-#run_genetic_algorithm(10, 100, 1, 0)
+run_genetic_algorithm(80, 100, 1, 0)

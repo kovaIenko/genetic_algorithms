@@ -46,24 +46,26 @@ def healthOf(ch):
 
 # RWS
 
-def selRoulette(list, list_of_health):
+def selRoulette(pop, list_of_health):
     sumH = sum(list_of_health)
-    list = sorted(list, key=healthOf)
+    pop = sorted(pop, key=healthOf)
+    list_of_health = sorted(list_of_health)
     probability = []
     chosen = []
-    for ch in list:
-        prob = Decimal(healthOf(ch))/Decimal(sumH)
+    for health in list_of_health:
+        prob = Decimal(health)/Decimal(sumH)
         probability.append(prob)
     cumsum = np.cumsum(probability)
     cumsum[len(cumsum) - 1] = Decimal(1.)
-    for i, val in enumerate(list):
+    list_health_temp = []
+    for val_ in pop:
         u = random.random()
         for idx, val in enumerate(cumsum):
             if val >= u:
-                list_of_health[i] = healthOf(list[idx])
-                chosen.append(list[idx].copy())
+                list_health_temp.append((list_of_health[idx]))
+                chosen.append(pop[idx].copy())
                 break
-    return chosen, list_of_health
+    return chosen, list_health_temp
 
 # 0 -> 1 or 1 -> 0
 def turnOverGen(ch, indOfGen):
@@ -77,7 +79,6 @@ def turnOverGen(ch, indOfGen):
 def mutation(list, percentage, l, list_of_health):
     count_ = len(list) * l
     numbOfMut = count_ * percentage
-    indexes = []
     for i in range(int(numbOfMut)):
         u = int(random.random() * count_)
         if u < l - 1:
@@ -93,7 +94,6 @@ def mutation(list, percentage, l, list_of_health):
         currentCh = turnOverGen(currCh, indOfGen)
         list[indOfCh] = currentCh
         list_of_health[indOfCh] = healthOf(currentCh)
-        indexes.append(indOfCh)
     return list, list_of_health
 
 
@@ -218,16 +218,6 @@ def init_health_list(list):
         list_of_health.append(healthOf(ch))
     return list_of_health
 
-# return the map [ distance : frequency ]
-def calc_all_distances(list, N, l):
-    frequency = { new_list: 0 for new_list in range(l + 1)}
-    for i in range(0, N):
-        for j in range(i + 1, N):
-            dis = hamming(list[i], list[j])
-            frequency[dis] = frequency.get(dis) + 1
-    return frequency
-
-
 def calc_hamming_to_ideal(list_health, l):
     frequency = {new_list: 0 for new_list in range(l + 1)}
     for ch_health in list_health:
@@ -267,6 +257,13 @@ def deviation_meanHealth_and_optimum(list_of_health, N, l ):
 def deviation_bestHealth_and_optimum(list_of_health, l):
     return bestHealth(list_of_health) - l
 
+def percent_polym_genes(list_of_health, l, N):
+    suma = 0
+    all = l * N
+    for ch_health in list_of_health:
+        suma += l - ch_health
+    return suma*100/all
+
 import xlsxwriter
 
 
@@ -290,7 +287,7 @@ def save_to_file_each_iter(worksheet, iteration, list_of_health, N, l):
     val_dev_bestHealth = deviation_bestHealth_and_optimum(list_of_health, l)
     iteration
 
-CONST_STOP_ALGORITHM = 200000
+CONST_STOP_ALGORITHM = 200
 PRECISION = 0.0001
 CONST_NUMB_GETTING_INFO = 10
 
@@ -329,6 +326,7 @@ def execution(l, N):
         pop, list_health = selRoulette(pop, list_health)
         print("after roulette")
         print(pop)
+        print(list_health)
         pop, list_health = mutation(pop, pm, l, list_health)
         print("after mutation")
         print(pop)
@@ -337,7 +335,7 @@ def execution(l, N):
 
 
 l = 10
-N = 300
+N = 500
 execution(l, N)
 
 
@@ -354,7 +352,10 @@ def execution2(l, N, X ,Y):
             sum_mean_health = 0
             break
         sum_mean_health += mean
+        print(pop)
         pop, list_health = selRoulette(pop, list_health)
+        print("list_health")
+        print(list_health)
         print("after roulette")
         print(pop)
         pop, list_health = mutation(pop, pm, l, list_health)

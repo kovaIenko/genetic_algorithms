@@ -3,19 +3,18 @@ import random
 import numpy as np  # linear algebra
 from collections import Counter
 from decimal import *
+
+import xlsxwriter
 from operator import attrgetter
 
 getcontext().prec = 6
 
-
 import scipy.spatial.distance
-import timeit  # for measuring time
 import matplotlib.pyplot as plt
 
 
 class UnknownCoding(Exception):
     pass
-
 
 # generate initial population of size N. each chromosome has a length l
 
@@ -35,44 +34,56 @@ def generate_population(l, N, X, Y, coding="binary"):
     return general_population
 
 
+'''
 # Calculate the health of all population (alternative method)
 def population_health(pop):
     return sum(map(calculate_individual_fitness, pop))
+'''
 
-
-def healthOf(ch):
+def health_of_1(ch):
     return np.count_nonzero(ch == 0)
 
 # the health func for third type of evaluation
-def health_of(type, l):
+def health_of_3(type_, l):
     return {
-         type == 'neutral': l,
-         type == 'pathogenic': l/(l-10),
-         type == 'lethal': 0.1 * l,
-    }[-1]
+         type_ == 'neutral': l,
+         type_ == 'pathogenic': l/(l-10),
+         type_ == 'lethal': 0.1,
+    }.get(type_)
 
+def health_of_2(l):
+    return l
 
 # RWS
-def selRoulette(pop, list_of_health):
-    sumH = sum(list_of_health)
-    pop = sorted(pop, key=healthOf)
-    list_of_health = sorted(list_of_health)
-    probability = []
+def selRoulette(pop, health_func, list_of_health, N):
     chosen = []
-    for health in list_of_health:
-        prob = Decimal(health)/Decimal(sumH)
-        probability.append(prob)
+    pop = sorted(pop, key=health_func)
+    probability, list_of_health = calc_probabilities(list_of_health, N)
     cumsum = np.cumsum(probability)
     cumsum[len(cumsum) - 1] = Decimal(1.)
     list_health_temp = []
-    for val_ in pop:
+    for i in range(len(pop)):
         u = random.random()
         for idx, val in enumerate(cumsum):
             if val >= u:
-                list_health_temp.append((list_of_health[idx]))
+                if list_of_health:
+                   list_health_temp.append(list_of_health[idx])
                 chosen.append(pop[idx].copy())
                 break
     return chosen, list_health_temp
+
+
+def calc_probabilities(health_list, N):
+    probability = []
+    if health_list:
+        sum_health = sum(health_list)
+        health_list = sorted(health_list)
+        for health in health_list:
+            prob = Decimal(health) / Decimal(sum_health)
+            probability.append(prob)
+    else:
+        probability = [1 / N] * N
+    return probability, health_list
 
 # 0 -> 1 or 1 -> 0
 def turnOverGen(ch, indOfGen):
@@ -83,21 +94,25 @@ def turnOverGen(ch, indOfGen):
     return ch
 
 
-def mutation(pop, percentage, l, list_of_health, healthOfCh, features, pathogenic_muted):
+def mutation(pop, percentage, l, list_of_health, health_of, features=None, pathogenic_muted=None):
     count_ = len(pop) * l
     numbOfMut = count_ * percentage
     for i in range(int(numbOfMut)):
         index_of_ch, index_of_gen = generate_ch_and_gen(count_)
-        if features is None:
+        if not features:
              currCh = pop[index_of_ch]
              currentCh = turnOverGen(currCh, index_of_gen)
              pop[index_of_ch] = currentCh
-             list_of_health[index_of_ch] = healthOfCh(currentCh)
+             list_of_health[index_of_ch] = health_of(currentCh)
+        elif not list_of_health:
+             currCh = pop[index_of_ch]
+             currentCh = turnOverGen(currCh, index_of_gen)
+             pop[index_of_ch] = currentCh
         else:
              current_map = features[index_of_ch]
              type = getType(current_map, index_of_gen)
              pathogenic_muted = increment_pathogenic_counter(pathogenic_muted, type)
-             list_of_health[index_of_ch] = healthOfCh(type, l)
+             list_of_health[index_of_ch] = health_of(type, l)
     return pop, list_of_health, pathogenic_muted
 
 
@@ -125,10 +140,6 @@ def getType(current_map, ind_of_gen):
              return type
      return None
 
-# generate the population by the 3 method
-def init3(lenCh, numbs):
-    print()
-
 #list of maps for each chromosome
 def list_features_of_ch(pop):
     maps = []
@@ -147,22 +158,22 @@ def hamming(chaine1, chaine2):
     return sum(c1 != c2 for c1, c2 in zip(chaine1, chaine2))
 
 
-# Alternative method (using a third-party module)
+'''# Alternative method (using a third-party module)
 def hamming_distance(a, b):
     if len(a) != len(b):  # Checking if chromosomes have equal length
         return None
     overall_genes = len(a)
     ratio_of_different_genes = scipy.spatial.distance.hamming(a, b)
     number_of_different_genes = int(ratio_of_different_genes * overall_genes)
-    return number_of_different_genes
+    return number_of_different_genes'''
 
 
 # Return the dictionary of the form { distance : frequency }
-def calc_all_distances(list, N, l):
-    frequency = {new_list: 0 for new_list in range(l + 1)}
-    for i in range(0, N):
+def calc_all_distances(list_, N_, l_):
+    frequency = {new_list: 0 for new_list in range(l_ + 1)}
+    for i in range(0, N_):
         for j in range(i + 1, N):
-            dis = hamming(list[i], list[j])
+            dis = hamming(list_[i], list_[j])
             frequency[dis] = frequency.get(dis) + 1
     return frequency
 
@@ -171,18 +182,17 @@ def healthMean(N, list_health):
 
 
 
-# Alternative method
+'''# Alternative method
 
 def mean_health_of_population(pop):
     return population_health(pop) / len(pop)
 
-
+'''
 ### execute the mutation
 ### indexes = list of pointers to chromosomes which were mutated
 
 def calculate_individual_fitness(chromosome):
     return sum(map(lambda x: x == 0, chromosome))
-
 
 # We select random t chromosomes, compare them with each other, choose the fittest one and send it to the mating pool. Then chromosomes are returned to the initial population
 # The process continues until we select N chromosomes for a new population
@@ -247,10 +257,10 @@ def should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, current_mean_hea
     return False
 
 
-def init_health_list(list):
+def init_health_list(list, health_func):
     list_of_health = []
     for ch in list:
-        list_of_health.append(healthOf(ch))
+        list_of_health.append(health_func(ch))
     return list_of_health
 
 def calc_hamming_to_ideal(list_health, l):
@@ -294,13 +304,10 @@ def deviation_bestHealth_and_optimum(list_of_health, l):
 
 def percent_polym_genes(list_of_health, l, N):
     suma = 0
-    all = l * N
+    all_ = l * N
     for ch_health in list_of_health:
         suma += l - ch_health
-    return suma*100/all
-
-import xlsxwriter
-
+    return suma*100/all_
 
 def save_to_file(worksheet, dict, iterate):
     row = int(iterate / CONST_NUMB_GETTING_INFO) - 1
@@ -336,13 +343,6 @@ def should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, current_mean_hea
             return True
     return False
 
-
-def init_health_list(list):
-    list_of_health = []
-    for ch in list:
-        list_of_health.append(healthOf(ch))
-    return list_of_health
-
 # how many mutations we can do through the all iterations
 def num_of_pathogenic_genes(N,l, percentage):
     return N * l * percentage
@@ -351,25 +351,23 @@ def execution(l, N):
     workbook = xlsxwriter.Workbook('data.xls')
     worksheet = workbook.add_worksheet()
     pop = generate_population(l, N, 0, 1)
-    print(distances_for_wild_type(pop))
     pm = 1 / (10 * l)
     sum_mean_health = Decimal(0)
-    list_health = init_health_list(pop)
-    features = []
+    list_health = init_health_list(pop, health_of_1)
     for i in range(CONST_STOP_ALGORITHM):
         mean = healthMean(N, list_health)
         if should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, mean):
             sum_mean_health = 0
             break
         sum_mean_health += mean
-        pop, list_health = selRoulette(pop, list_health)
-        print("after roulette")
+        pop, list_health = selRoulette(pop, health_of_1, list_health, N)
+        '''print("after roulette")
         print(pop)
-        print(list_health)
-        pop, list_health, pathogenic_muted = mutation(pop, pm, l, list_health, healthOf, None, None)
-        print("after mutation")
-        print(pop)
-        print("- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
+        print(list_health)'''
+        pop, list_health, pathogenic_muted = mutation(pop, pm, l, list_health, health_of_1)
+        '''print("after mutation")
+        print(pop)'''
+        ### print("- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
     workbook.close()
 
 

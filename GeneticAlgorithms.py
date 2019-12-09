@@ -43,9 +43,16 @@ def population_health(pop):
 def healthOf(ch):
     return np.count_nonzero(ch == 0)
 
+# the health func for third type of evaluation
+def health_of(type, l):
+    return {
+         type == 'neutral': l,
+         type == 'pathogenic': l/(l-10),
+         type == 'lethal': 0.1 * l,
+    }[-1]
+
 
 # RWS
-
 def selRoulette(pop, list_of_health):
     sumH = sum(list_of_health)
     pop = sorted(pop, key=healthOf)
@@ -76,31 +83,59 @@ def turnOverGen(ch, indOfGen):
     return ch
 
 
-def mutation(list, percentage, l, list_of_health):
-    count_ = len(list) * l
+def mutation(pop, percentage, l, list_of_health, healthOfCh, features, pathogenic_muted):
+    count_ = len(pop) * l
     numbOfMut = count_ * percentage
     for i in range(int(numbOfMut)):
-        u = int(random.random() * count_)
-        if u < l - 1:
-            indOfCh = 0
-            if u != 0:
-                indOfGen = u - 1
-            else:
-                indOfGen = u
+        index_of_ch, index_of_gen = generate_ch_and_gen(count_)
+        if features is None:
+             currCh = pop[index_of_ch]
+             currentCh = turnOverGen(currCh, index_of_gen)
+             pop[index_of_ch] = currentCh
+             list_of_health[index_of_ch] = healthOfCh(currentCh)
         else:
-            indOfCh = int((u - 1) / l)
-            indOfGen = int((u - 1) % l)
-        currCh = list[indOfCh]
-        currentCh = turnOverGen(currCh, indOfGen)
-        list[indOfCh] = currentCh
-        list_of_health[indOfCh] = healthOf(currentCh)
-    return list, list_of_health
+             current_map = features[index_of_ch]
+             type = getType(current_map, index_of_gen)
+             pathogenic_muted = increment_pathogenic_counter(pathogenic_muted, type)
+             list_of_health[index_of_ch] = healthOfCh(type, l)
+    return pop, list_of_health, pathogenic_muted
 
+
+def increment_pathogenic_counter(counter, type):
+    if type == 'pathogenic':
+        counter += 1
+    return counter
+
+def generate_ch_and_gen(count_):
+    u = int(random.random() * count_)
+    if u < l - 1:
+        indOfCh = 0
+        if u != 0:
+            indOfGen = u - 1
+        else:
+            indOfGen = u
+    else:
+        indOfCh = int((u - 1) / l)
+        indOfGen = int((u - 1) % l)
+    return indOfCh, indOfGen
+
+def getType(current_map, ind_of_gen):
+     for (type, list_of_genes) in current_map.keys():
+         if ind_of_gen in list_of_genes:
+             return type
+     return None
 
 # generate the population by the 3 method
 def init3(lenCh, numbs):
     print()
 
+#list of maps for each chromosome
+def list_features_of_ch(pop):
+    maps = []
+    for ch in pop:
+       #maps.append(mutation_genes_distribution(ch))
+       maps.append(None)
+    return maps
 
 '''
 Comparing two binary strings of equal length, Hamming distance is the number of bit positions in which the two bits are different.
@@ -308,6 +343,9 @@ def init_health_list(list):
         list_of_health.append(healthOf(ch))
     return list_of_health
 
+# how many mutations we can do through the all iterations
+def num_of_pathogenic_genes(N,l, percentage):
+    return N * l * percentage
 
 def execution(l, N):
     workbook = xlsxwriter.Workbook('data.xls')
@@ -317,6 +355,7 @@ def execution(l, N):
     pm = 1 / (10 * l)
     sum_mean_health = Decimal(0)
     list_health = init_health_list(pop)
+    features = []
     for i in range(CONST_STOP_ALGORITHM):
         mean = healthMean(N, list_health)
         if should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, mean):
@@ -327,15 +366,15 @@ def execution(l, N):
         print("after roulette")
         print(pop)
         print(list_health)
-        pop, list_health = mutation(pop, pm, l, list_health)
+        pop, list_health, pathogenic_muted = mutation(pop, pm, l, list_health, healthOf, None, None)
         print("after mutation")
         print(pop)
         print("- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
     workbook.close()
 
 
-l = 10
-N = 500
+l = 8
+N = 10
 execution(l, N)
 
 

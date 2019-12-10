@@ -156,6 +156,94 @@ def list_features_of_ch(pop):
 CONST_TYPE_PATHOGENIC_%_ = 0.0232
 CONST_TYPE_NEUTRAL_%_ = 0.38'''
 
+
+# Returns a map for a chromosome, where key is a mutation type and value is a list of genes positions
+def mutation_genes_distribution(chr, first_neutral_percent=0.135, any_neutral_percent=0.245,
+                                pathogenic_percent=0.0232):
+    l = len(chr)
+    # Calculate number of mutations of each type
+    first_neutral_mutations = floor(first_neutral_percent * l)
+    any_neutral_mutations = floor(any_neutral_percent * l)
+    pathogenic_mutations = floor(pathogenic_percent * l)
+    lethal_mutations = l - (first_neutral_mutations + any_neutral_mutations + pathogenic_mutations)
+    overall_neutral = first_neutral_mutations + any_neutral_mutations
+    overall = overall_neutral + pathogenic_mutations + lethal_mutations
+    # Check the number of mutations of each type
+    general_scheme = {'neutral_first': first_neutral_mutations, 'neutral_other': any_neutral_mutations, 'pathogenic':
+        pathogenic_mutations, 'lethal': lethal_mutations}
+
+    specific_scheme = dict()
+    first_neutral_indices = list(range(first_neutral_mutations))
+    print(first_neutral_indices)
+
+
+    other_neutral_indices = []
+    # Locate neutral locuses
+
+    i = first_neutral_mutations # choose randomly 24.5 % of other neutral genes (if l = 100, i is in range [13, 37) = > we get 24 genes)
+    # We need to iterate until we locate all neutral locuses
+    while i != overall_neutral:
+        rand = np.random.randint(first_neutral_mutations, l)  # if l = 100, a random number from [13, 100)
+        if rand in other_neutral_indices:  # if there's a collision, then go one iteration back
+            continue
+        else:
+            other_neutral_indices.append(rand)
+            i = i + 1
+    print("Other neutral indices:")
+    print(other_neutral_indices)
+    neutral_indices = np.concatenate((first_neutral_indices, other_neutral_indices), axis=0)
+    print("Indices of neutral locuses:")
+    print(neutral_indices)
+    print("Number of neutral indices:")
+    print(len(neutral_indices))
+
+    # Set indices in the chromosome's schemes
+    specific_scheme['neutral'] = neutral_indices
+
+    # Locate pathogenic locuses
+    pathogenic_indices = []
+    j = 0
+    while j != pathogenic_mutations:
+        rand = np.random.randint(first_neutral_mutations, l)
+        if rand in neutral_indices or rand in pathogenic_indices:  # check if this locus is not already included as neutral or pathogenic
+            continue
+        else:
+            pathogenic_indices.append(rand)
+            j = j + 1
+    print("Indices of pathogenic locuses:")
+    print(pathogenic_indices)
+    specific_scheme['pathogenic'] = pathogenic_indices
+
+
+    # Locate lethal locuses
+    lethal_indices = []
+
+    k = 0
+    while k != lethal_mutations:
+        rand = np.random.randint(first_neutral_mutations, l)
+        if rand in neutral_indices or rand in pathogenic_indices or rand in lethal_indices:
+            continue
+        else:
+            lethal_indices.append(rand)
+            k = k + 1
+
+    specific_scheme['lethal'] = lethal_indices
+    print("Lethal indices:", lethal_indices)
+    print("Number of lethal indices:", len(lethal_indices))
+    # Check if lists of indices don't contain equal elements (pairwise intersection must be an empty set)
+    assert(set(neutral_indices) & set(pathogenic_indices) == set())
+    assert(set(neutral_indices) & set(lethal_indices) == set())
+    assert(set(pathogenic_indices) & set(lethal_indices) == set())
+    #return general_scheme, overall, specific_scheme # for testing
+    return specific_scheme
+
+
+# Testing mutation_genes_distribution() method
+chrom = np.random.randint(0, 2, 100)
+scheme = mutation_genes_distribution(chrom)
+print(scheme)
+
+
 def mutation_genes_distribution(l):
     initial = int(0.135*l)
     rest = l - initial
@@ -163,7 +251,6 @@ def mutation_genes_distribution(l):
     list_2 = np.random.choice([CONST_TYPE_NEUTRAL, CONST_TYPE_PATHOGENIC, CONST_TYPE_LETHAL], size=rest, p=[0.2932, 0.0178, 0.689])
     result_list = np.concatenate((list_1, list_2), axis=0)
     return arrangement_list(result_list)
-
 
 def arrangement_list(list_):
     dict = {CONST_TYPE_NEUTRAL: [], CONST_TYPE_PATHOGENIC: [], CONST_TYPE_LETHAL: []}

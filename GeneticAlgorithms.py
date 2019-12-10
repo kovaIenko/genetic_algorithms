@@ -40,15 +40,19 @@ def population_health(pop):
     return sum(map(calculate_individual_fitness, pop))
 '''
 
+CONST_TYPE_NEUTRAL = 'neutral'
+CONST_TYPE_PATHOGENIC = 'pathogenic'
+CONST_TYPE_LETHAL = 'lethal'
+
 def health_of_1(ch):
     return np.count_nonzero(ch == 0)
 
 # the health func for third type of evaluation
 def health_of_3(type_, l):
     return {
-         type_ == 'neutral': l,
-         type_ == 'pathogenic': l/(l-10),
-         type_ == 'lethal': 0.1,
+         type_ == CONST_TYPE_NEUTRAL: l,
+         type_ == CONST_TYPE_PATHOGENIC: l/(l-10),
+         type_ == CONST_TYPE_LETHAL: 0.1,
     }.get(type_)
 
 def health_of_2(l):
@@ -117,7 +121,7 @@ def mutation(pop, percentage, l, list_of_health, health_of, features=None, patho
 
 
 def increment_pathogenic_counter(counter, type):
-    if type == 'pathogenic':
+    if type == CONST_TYPE_PATHOGENIC:
         counter += 1
     return counter
 
@@ -148,6 +152,30 @@ def list_features_of_ch(pop):
        maps.append(None)
     return maps
 
+'''CONST_TYPE_LETHAL_%_ =
+CONST_TYPE_PATHOGENIC_%_ = 0.0232
+CONST_TYPE_NEUTRAL_%_ = 0.38'''
+
+def mutation_genes_distribution(l):
+    initial = int(0.135*l)
+    rest = l - initial
+    list_1 = [CONST_TYPE_NEUTRAL]*initial
+    list_2 = np.random.choice([CONST_TYPE_NEUTRAL, CONST_TYPE_PATHOGENIC, CONST_TYPE_LETHAL], size=rest, p=[0.2932, 0.0178, 0.689])
+    result_list = np.concatenate((list_1, list_2), axis=0)
+    return arrangement_list(result_list)
+
+
+def arrangement_list(list_):
+    dict = {CONST_TYPE_NEUTRAL: [], CONST_TYPE_PATHOGENIC: [], CONST_TYPE_LETHAL: []}
+    for ind, val in enumerate(list_):
+        dict[val].append(ind)
+    return dict
+
+inds = mutation_genes_distribution(100);
+
+print(len(inds.get(CONST_TYPE_NEUTRAL)))
+print(len(inds.get(CONST_TYPE_PATHOGENIC)))
+print(len(inds.get(CONST_TYPE_LETHAL)))
 '''
 Comparing two binary strings of equal length, Hamming distance is the number of bit positions in which the two bits are different.
 In order to calculate the Hamming distance between two strings, we perform their XOR operation and then count the total number of 1s in the resultant string.

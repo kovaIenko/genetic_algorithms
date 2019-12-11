@@ -1,11 +1,10 @@
 import random
-
+import Properties
+import xlsxwriter
 import numpy as np  # linear algebra
 from collections import Counter
 from decimal import *
 
-import xlsxwriter
-from operator import attrgetter
 
 getcontext().prec = 6
 
@@ -40,19 +39,16 @@ def population_health(pop):
     return sum(map(calculate_individual_fitness, pop))
 '''
 
-CONST_TYPE_NEUTRAL = 'neutral'
-CONST_TYPE_PATHOGENIC = 'pathogenic'
-CONST_TYPE_LETHAL = 'lethal'
 
 def health_of_1(ch):
     return np.count_nonzero(ch == 0)
 
 # the health func for third type of evaluation
-def health_of_3(type_, l):
+def health_of_3(type_, l, k):
     return {
-         type_ == CONST_TYPE_NEUTRAL: l,
-         type_ == CONST_TYPE_PATHOGENIC: l/(l-10),
-         type_ == CONST_TYPE_LETHAL: 0.1,
+         type_ == Properties.CONST_TYPE_NEUTRAL: l,
+         type_ == Properties.CONST_TYPE_PATHOGENIC: l/(l-k),
+         type_ == Properties.CONST_TYPE_LETHAL: 0.1,
     }.get(type_)
 
 def health_of_2(l):
@@ -121,7 +117,7 @@ def mutation(pop, percentage, l, list_of_health, health_of, features=None, patho
 
 
 def increment_pathogenic_counter(counter, type):
-    if type == CONST_TYPE_PATHOGENIC:
+    if type == Properties.CONST_TYPE_PATHOGENIC:
         counter += 1
     return counter
 
@@ -151,11 +147,6 @@ def list_features_of_ch(N, l):
        maps.append(mutation_genes_distribution(l))
        maps.append(None)
     return maps
-
-'''CONST_TYPE_LETHAL_%_ =
-CONST_TYPE_PATHOGENIC_%_ = 0.0232
-CONST_TYPE_NEUTRAL_%_ = 0.38'''
-
 
 # Returns a map for a chromosome, where key is a mutation type and value is a list of genes positions
 def mutation_genes_distribution(chr, first_neutral_percent=0.135, any_neutral_percent=0.245,
@@ -309,8 +300,6 @@ def calc_all_distances(list_, N_, l_):
 def healthMean(N, list_health):
     return Decimal(sum(list_health)/N)
 
-
-
 '''# Alternative method
 
 def mean_health_of_population(pop):
@@ -397,28 +386,6 @@ def build_line_graph(health_values, N, l, x, y):
  '''
 
 
-CONST_STOP_ALGORITHM = 2000
-CONST_STOP_ALGORITHM_BY_MEAN_HEALTH = 0.0001
-CONST_NUMB_GETTING_INFO = 10
-
-
-def should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, current_mean_health):
-    if i % CONST_NUMB_GETTING_INFO == 0 and i != 0:  # each 11n iterations
-        save_to_file(worksheet, calc_all_distances(pop, N, l), i)
-        last_10_mean_health = sum_mean_health / CONST_NUMB_GETTING_INFO
-        if Decimal(current_mean_health) - Decimal(last_10_mean_health) < CONST_STOP_ALGORITHM_BY_MEAN_HEALTH:
-            print("the_best_individual_distances")  # wild type
-            the_best_individual_distances = distances_for_wild_type(pop)
-            print(the_best_individual_distances)
-            print("Algorithm was stopped: there is mistake ")
-            return True
-    if i+1 == CONST_STOP_ALGORITHM:
-        print("the_best_individual_distances")  # wild type
-        the_best_individual_distances = distances_for_wild_type(pop)
-        print(the_best_individual_distances)
-    return False
-
-
 def init_health_list(list, health_func):
     list_of_health = []
     for ch in list:
@@ -472,7 +439,7 @@ def percent_polym_genes(list_of_health, l, N):
     return suma*100/all_
 
 def save_to_file(worksheet, dict, iterate):
-    row = int(iterate / CONST_NUMB_GETTING_INFO) - 1
+    row = int(iterate / Properties.CONST_NUMB_GETTING_INFO) - 1
     col = 0
     if row == 0:
         for key in dict.keys():
@@ -484,23 +451,19 @@ def save_to_file(worksheet, dict, iterate):
         worksheet.write(row, col, dict.get(key))
         col = col + 1
 
-def save_to_file_each_iter(worksheet, iteration, list_of_health, N, l):
+def save_to_file_the_end(worksheet, list_of_health, N, l, stop_mutated_iter = None):
     meanHealth = healthMean(N, list_of_health)
-    Healthbest = bestHealth(list_of_health)
+    healthbest = bestHealth(list_of_health)
     val_dev_meanHealth = deviation_meanHealth_and_optimum(list_of_health, N, l)
     val_dev_bestHealth = deviation_bestHealth_and_optimum(list_of_health, l)
-    iteration
-
-CONST_STOP_ALGORITHM = 200
-PRECISION = 0.0001
-CONST_NUMB_GETTING_INFO = 10
+    polym_genes = percent_polym_genes(list_of_health, l, N)
 
 
 def should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, current_mean_health):
-    if i % CONST_NUMB_GETTING_INFO == 0 and i != 0:  # each 11n iterations
+    if i % Properties.CONST_NUMB_GETTING_INFO == 0 and i != 0:  # each 11n iterations
         # save_to_file(worksheet, calc_all_distances(pop, N, l), i)
-        last_10_mean_health = sum_mean_health / CONST_NUMB_GETTING_INFO
-        if Decimal(current_mean_health) - Decimal(last_10_mean_health) < PRECISION:
+        last_10_mean_health = sum_mean_health / Properties.CONST_NUMB_GETTING_INFO
+        if Decimal(current_mean_health) - Decimal(last_10_mean_health) < Properties.PRECISION:
             print("Algorithm was stopped: there is mistake ")
             return True
     return False
@@ -516,7 +479,7 @@ def execution(l, N):
     pm = 1 / (10 * l)
     sum_mean_health = Decimal(0)
     list_health = init_health_list(pop, health_of_1)
-    for i in range(CONST_STOP_ALGORITHM):
+    for i in range(Properties.CONST_STOP_ALGORITHM):
         mean = healthMean(N, list_health)
         if should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, mean):
             sum_mean_health = 0

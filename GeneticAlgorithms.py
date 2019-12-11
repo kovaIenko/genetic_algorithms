@@ -174,6 +174,7 @@ def mutation_genes_distribution(chr, first_neutral_percent=0.135, any_neutral_pe
 
     specific_scheme = dict()
     first_neutral_indices = list(range(first_neutral_mutations))
+    print("First neutral indices:")
     print(first_neutral_indices)
 
 
@@ -244,6 +245,19 @@ scheme = mutation_genes_distribution(chrom)
 print(scheme)
 
 
+def mkdir_p(mypath):
+    '''Creates a directory. equivalent to using mkdir -p on the command line'''
+
+    from errno import EEXIST
+    from os import makedirs,path
+
+    try:
+        makedirs(mypath)
+    except OSError as exc: # Python >2.5
+        if exc.errno == EEXIST and path.isdir(mypath):
+            pass
+        else: raise
+
 def mutation_genes_distribution(l):
     initial = int(0.135*l)
     rest = l - initial
@@ -258,11 +272,11 @@ def arrangement_list(list_):
         dict[val].append(ind)
     return dict
 
-inds = mutation_genes_distribution(100);
+#inds = mutation_genes_distribution(100);
 
-print(len(inds.get(CONST_TYPE_NEUTRAL)))
-print(len(inds.get(CONST_TYPE_PATHOGENIC)))
-print(len(inds.get(CONST_TYPE_LETHAL)))
+#print(len(inds.get(CONST_TYPE_NEUTRAL)))
+#print(len(inds.get(CONST_TYPE_PATHOGENIC)))
+#print(len(inds.get(CONST_TYPE_LETHAL)))
 '''
 Comparing two binary strings of equal length, Hamming distance is the number of bit positions in which the two bits are different.
 In order to calculate the Hamming distance between two strings, we perform their XOR operation and then count the total number of 1s in the resultant string.
@@ -326,13 +340,20 @@ def tournament_selection(population, t):
         mating_pool.append(random_chromosomes[index_of_fittest])
     return mating_pool
 
+import os
+# Save a histogram to png file with all the parameters specified
+# (a histogram with frequencies of pairwise Hamming distances between chromosomes)
 
-# Save a histogram to png file with all the parameters specified (except mutation)
-def build_histogram(pop, N, l, iter_num, x, y):
+def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm):
+    script_dir = os.path.dirname(__file__)
+    results_dir = os.path.join(script_dir, 'FirstHistType; Selection={0},N={1};l={2};X={3};Y={4}/'.format(selection_type, N, l, x, y))
+    if not os.path.isdir(results_dir):
+        os.makedirs(results_dir)
     distances = calc_all_distances(pop, N, l)
     plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
     plt.xticks(list(distances.keys()))
-    plt.savefig("N={0}_l={1}_iter={2}_X={3}%_Y={4}%.png".format(N, l, iter_num, x, y))
+    plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
+    sample_file_name = "sample"
 
 
 # Build a line plot with mean health for each iteration and save to png
@@ -482,6 +503,7 @@ def execution(l, N):
         pop, list_health, pathogenic_muted = mutation(pop, pm, l, list_health, health_of_1)
         '''print("after mutation")
         print(pop)'''
+        build_first_histogram(pop, N, l, i, 0, 100, "roulette", pm)
         ### print("- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
     workbook.close()
 

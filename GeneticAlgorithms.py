@@ -404,10 +404,14 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm):
 
 # Build a line plot with mean health for each iteration and save to png
 
-def build_line_graph(health_values, N, l, x, y):
+def build_line_graph(health_values, N, l, x, y, selection_type, pm):
+    script_dir = os.path.dirname(__file__)
+    results_dir = os.path.join(script_dir,
+                               'LineGraph; Selection={0},N={1};l={2};X={3};Y={4}/'.format(selection_type, N, l, x,
+                                                                                              y))
     plt.clf()
     plt.plot(health_values)
-    plt.savefig("health-over-generations_N={0}_l={1}_X={2}%_Y={3}%.png".format(N, l, x, y))
+    plt.savefig("pm={0}.png".format(pm))
 
 
 '''  sample = pop[:-3:-1]  # take two last chromosomes from population
@@ -638,7 +642,7 @@ def run_genetic_algorithm_with_roulette(l, N, X, Y, pm):
         if counter >= 10:
             print("Mean health stays the same during 10 iterations -> algorithm was stopped")
             print("Iteration number: ", counter)
-            build_line_graph(health_during_generations, N, l, x, y)
+            build_line_graph(health_during_generations, N, l, x, y, "Roulette", pm)
             # Save to file all needed criteria
             break
         print("Go to the next iteration")

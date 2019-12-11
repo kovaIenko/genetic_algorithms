@@ -353,8 +353,34 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm):
     plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
     plt.xticks(list(distances.keys()))
     plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
-    sample_file_name = "sample"
 
+
+# Save a histogram to png file with all the parameters specified
+# (a histogram with frequencies of Hamming distances to the optimal chromosome from each chromosome in the population)
+
+def build_second_histogram(list_health, N, l, iter_num, x, y, selection_type, pm):
+    script_dir = os.path.dirname(__file__)
+    results_dir = os.path.join(script_dir, 'SecondHistType; Selection={0},N={1};l={2};X={3};Y={4}/'.format(selection_type, N, l, x, y))
+    if not os.path.isdir(results_dir):
+        os.makedirs(results_dir)
+    distances = calc_hamming_to_ideal(list_health, l)
+    plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
+    plt.xticks(list(distances.keys()))
+    plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
+
+
+# Save a histogram to png file with all the parameters specified
+# (a histogram with frequencies of Hamming distances to the optimal chromosome from each chromosome in the population)
+
+def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm):
+    script_dir = os.path.dirname(__file__)
+    results_dir = os.path.join(script_dir, 'ThirdHistType; Selection={0},N={1};l={2};X={3};Y={4}/'.format(selection_type, N, l, x, y))
+    if not os.path.isdir(results_dir):
+        os.makedirs(results_dir)
+    distances = distances_for_wild_type(pop)
+    plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
+    plt.xticks(list(distances.keys()))
+    plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
 
 # Build a line plot with mean health for each iteration and save to png
 
@@ -503,7 +529,10 @@ def execution(l, N):
         pop, list_health, pathogenic_muted = mutation(pop, pm, l, list_health, health_of_1)
         '''print("after mutation")
         print(pop)'''
-        build_first_histogram(pop, N, l, i, 0, 100, "roulette", pm)
+        if i % 10 == 0:
+            build_first_histogram(pop, N, l, i, 0, 100, "Roulette", pm)
+            build_second_histogram(list_health, N, l, i, 0, 100, "Roulette", pm)
+            build_third_histogram(pop, N, l, i, 0, 100, "Roulette", pm)
         ### print("- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
     workbook.close()
 

@@ -145,10 +145,10 @@ def getType(current_map, ind_of_gen):
      return None
 
 #list of maps for each chromosome
-def list_features_of_ch(pop):
+def list_features_of_ch(N, l):
     maps = []
-    for ch in pop:
-       #maps.append(mutation_genes_distribution(ch))
+    for ch in len(N):
+       maps.append(mutation_genes_distribution(l))
        maps.append(None)
     return maps
 
@@ -258,7 +258,7 @@ def mkdir_p(mypath):
             pass
         else: raise
 
-def mutation_genes_distribution(l):
+'''def mutation_genes_distribution(l):
     initial = int(0.135*l)
     rest = l - initial
     list_1 = [CONST_TYPE_NEUTRAL]*initial
@@ -270,7 +270,7 @@ def arrangement_list(list_):
     dict = {CONST_TYPE_NEUTRAL: [], CONST_TYPE_PATHOGENIC: [], CONST_TYPE_LETHAL: []}
     for ind, val in enumerate(list_):
         dict[val].append(ind)
-    return dict
+    return dict'''
 
 #inds = mutation_genes_distribution(100);
 
@@ -541,34 +541,3 @@ l = 8
 N = 10
 execution(l, N)
 
-
-def execution2(l, N, X ,Y):
-    workbook = xlsxwriter.Workbook('data.xls')
-    worksheet = workbook.add_worksheet()
-    pop = generate_population(l, N, X, Y)
-    pm = 1 / (10 * l)
-    sum_mean_health = Decimal(0)
-    list_health = init_health_list(pop)
-    for i in range(CONST_STOP_ALGORITHM):
-        mean = healthMean(N, list_health)
-        if should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, mean):
-            sum_mean_health = 0
-            break
-        sum_mean_health += mean
-        print(pop)
-        pop, list_health = selRoulette(pop, list_health)
-        print("list_health")
-        print(list_health)
-        print("after roulette")
-        print(pop)
-        pop, list_health = mutation(pop, pm, l, list_health)
-        print("after mutation")
-        print(pop)
-        print("- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
-    workbook.close()
-
-l = 10
-N = 2000
-X = 0.9
-Y = 0.1
-#execution2(l, N, X, Y)

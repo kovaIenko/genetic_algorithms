@@ -11,7 +11,7 @@ getcontext().prec = 6
 
 import scipy.spatial.distance
 import matplotlib.pyplot as plt
-
+from math import floor
 
 class UnknownCoding(Exception):
     pass

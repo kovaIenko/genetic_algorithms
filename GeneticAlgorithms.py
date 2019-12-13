@@ -408,7 +408,7 @@ def calc_hamming_to_ideal(list_health, l):
     for ch_health in list_health:
         dis = l - ch_health
         frequency[dis] = frequency.get(dis) + 1
-        return frequency
+    return frequency
 
 
 # Ці відстані рахуємо тільки на останній ітерації (коли спрацьовує зупинка за здоров'ям, чи за кількістю ітерацій)
@@ -469,12 +469,14 @@ def save_to_file(worksheet, dict, iterate):
 
 
 
-def save_to_file_the_end(attempt, iteration,  list_of_health, N, l, pm,  type_of_selection, X, Y, stop_mutated_iter=None, params_tour = ' '):
+def save_to_file_the_end(attempt, iteration,  list_of_health, N, l, pm,  type_of_selection, X, Y, params_tour = -1, stop_mutated_iter=None):
     row = []
     row.append(attempt)
     row.append(iteration)
     row.append(pm)
-    row.append(type_of_selection + ' ' + str(params_tour))
+    if type_of_selection == "Tournament":
+        type_of_selection = type_of_selection + ' ' + str(params_tour)
+    row.append(type_of_selection)
     row.append(l)
     row.append(N)
     row.append(X)
@@ -491,8 +493,6 @@ def save_to_file_the_end(attempt, iteration,  list_of_health, N, l, pm,  type_of
     with file:
         writer = csv.writer(file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(row)
-        if attempt == Properties.CONST_NUMB_OF_ATTEMPTS:
-            writer.writerow(['']*len(Properties.NAME_FIELDS))
     file.close()
 
 
@@ -594,7 +594,6 @@ def manage_patogenic_ch(i,pathogenic_muted_bool, border_patogenic_mation, pathog
         pathogenic_muted_numb += 1
         if pathogenic_muted_numb > border_patogenic_mation:
             return i
-    return
 
 def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, features=None):
     type_of_selection = 'Roulette'
@@ -607,10 +606,11 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, fe
 
     border_patogenic_mutation = 0
     pathogenic_muted_numb = 0
-    indexes_patogenic_muted = []
+    indexes_patogenic_muted = None
 
     if features:
        border_patogenic_mutation = num_of_pathogenic_genes(N, l, 0.0232)
+       indexes_patogenic_muted = []
 
     for i in range(1, Properties.CONST_STOP_ALGORITHM + 1):
 
@@ -622,7 +622,8 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, fe
         pop, health_list = selRoulette(pop, health_func, health_list, N)
         pop, health_list, pathogenic_muted_bool = mutation(pop, pm, l, health_list, health_func, features)
 
-        indexes_patogenic_muted.append(manage_patogenic_ch(i, pathogenic_muted_bool, border_patogenic_mutation, pathogenic_muted_numb))
+        if features:
+          indexes_patogenic_muted.append(manage_patogenic_ch(i, pathogenic_muted_bool, border_patogenic_mutation, pathogenic_muted_numb))
 
         current_mean_health = healthMean(N, health_list)
         health_during_generations.append(current_mean_health)
@@ -633,10 +634,10 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, fe
             counter = 0
         if counter >= 10:
             build_line_graph(health_during_generations, N, l, x, y, type_of_selection, pm)
-            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, indexes_patogenic_muted)
+            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, -1, indexes_patogenic_muted)
             break
         if i == Properties.CONST_STOP_ALGORITHM:
-            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, indexes_patogenic_muted)
+            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, -1, indexes_patogenic_muted)
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list)
 
 
@@ -652,7 +653,7 @@ def perform():
     l_N = [(10, N_1), (20, N_1), (80, N_1), (100, N_2), (200, N_2),  (800, N_2), (1000, N_2),  (2000, N_2), (8000, N_2)]
 
     # X and Y
-    init_1 = [(0, 100)]
+    init_1 = [(50, 50)]
     init_2 = [(100, 0), (90, 10), (0, 100), (10, 90), (50, 50)]
     init_3 = [(100, 0), (90, 10), (50, 50)]
 
@@ -669,7 +670,7 @@ def perform():
                         features = list_features_of_ch(n, l)
                     for pm in arr_mutation_prob:
                         for attempt in range(3):
-                          run_genetic_algorithm_with_roulette(attempt, l, n, x/100, y/100, pm, health_funcs[type_ind], features)
+                          run_genetic_algorithm_with_roulette(attempt+1, l, n, x/100, y/100, pm, health_funcs[type_ind], features)
 
 
 

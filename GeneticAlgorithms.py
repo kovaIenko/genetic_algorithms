@@ -342,6 +342,7 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm):
     plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
     plt.xticks(list(distances.keys()))
     plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
+    plt.clf()
 
 
 # Save a histogram to png file with all the parameters specified
@@ -355,9 +356,10 @@ def build_second_histogram(list_health, N, l, iter_num, x, y, selection_type, pm
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = calc_hamming_to_ideal(list_health, l)
-    plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
+    plt.bar(list(distances.keys()), distances.values(), color='red', width=0.9)
     plt.xticks(list(distances.keys()))
     plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
+    plt.clf()
 
 
 # Save a histogram to png file with all the parameters specified
@@ -371,9 +373,10 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm):
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = distances_for_wild_type(pop, l)
-    plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
+    plt.bar(list(distances.keys()), distances.values(), color='blue', width=0.9)
     plt.xticks(list(distances.keys()))
     plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
+    plt.clf()
 
 
 # Build a line plot with mean health for each iteration and save to png
@@ -382,10 +385,12 @@ def build_line_graph(health_values, N, l, x, y, selection_type, pm):
     script_dir = os.path.dirname(__file__)
     results_dir = os.path.join(script_dir,
                                'LineGraph; Selection={0},N={1};l={2};X={3};Y={4}/'.format(selection_type, N, l, x,
-                                                                                              y))
-    plt.clf()
+                                                                                             y))
+    if not os.path.isdir(results_dir):
+        os.makedirs(results_dir)
     plt.plot(health_values)
-    plt.savefig("pm={0}.png".format(pm))
+    plt.savefig(results_dir + "/pm={0}.png".format(pm))
+    plt.clf()
 
 
 '''  sample = pop[:-3:-1]  # take two last chromosomes from population
@@ -638,6 +643,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, fe
         if i == Properties.CONST_STOP_ALGORITHM:
             save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, indexes_patogenic_muted)
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list)
+            build_line_graph(health_during_generations, N, l, x, y, type_of_selection, pm)
 
 
 

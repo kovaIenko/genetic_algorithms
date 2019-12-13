@@ -311,7 +311,7 @@ def calculate_individual_fitness(chromosome):
 
 # We select random t chromosomes, compare them with each other, choose the fittest one and send it to the mating pool. Then chromosomes are returned to the initial population
 # The process continues until we select N chromosomes for a new population
-def tournament_selection(population, t):
+def tournament_selection(population, health_func, list_of_health, t):
     mating_pool = []
     N = len(population)
     for chromosome in population:
@@ -320,11 +320,13 @@ def tournament_selection(population, t):
         for i in range(0, t):
             rand_index = np.random.randint(0, N)
             random_chromosomes.append(population[rand_index])
-            health_of_random.append(calculate_individual_fitness(random_chromosomes[i]))
+            health_of_random.append(health_func(random_chromosomes[i]))
+            #health_of_random.append(calculate_individual_fitness(random_chromosomes[i]))
         ##print(random_chromosomes)
         index_of_fittest = health_of_random.index(max(health_of_random))
+        list_of_health[rand_index] = health_of_random[index_of_fittest]
         mating_pool.append(random_chromosomes[index_of_fittest])
-    return mating_pool
+    return mating_pool, list_of_health
 
 
 

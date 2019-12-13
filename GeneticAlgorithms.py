@@ -300,7 +300,7 @@ def calc_all_distances(list_, N_, l_):
     return frequency
 
 def healthMean(N, list_health):
-    return Decimal(sum(list_health) / N)
+    return Decimal(sum(list_health))/Decimal(N)
 
 ### execute the mutation
 ### indexes = list of pointers to chromosomes which were mutated
@@ -311,7 +311,7 @@ def calculate_individual_fitness(chromosome):
 
 # We select random t chromosomes, compare them with each other, choose the fittest one and send it to the mating pool. Then chromosomes are returned to the initial population
 # The process continues until we select N chromosomes for a new population
-def tournament_selection(population, t):
+def tournament_selection(population, health_func, list_of_health, t):
     mating_pool = []
     N = len(population)
     for chromosome in population:
@@ -320,11 +320,13 @@ def tournament_selection(population, t):
         for i in range(0, t):
             rand_index = np.random.randint(0, N)
             random_chromosomes.append(population[rand_index])
-            health_of_random.append(calculate_individual_fitness(random_chromosomes[i]))
+            health_of_random.append(health_func(random_chromosomes[i]))
+            #health_of_random.append(calculate_individual_fitness(random_chromosomes[i]))
         ##print(random_chromosomes)
         index_of_fittest = health_of_random.index(max(health_of_random))
+        list_of_health[rand_index] = health_of_random[index_of_fittest]
         mating_pool.append(random_chromosomes[index_of_fittest])
-    return mating_pool
+    return mating_pool, list_of_health
 
 
 
@@ -342,6 +344,7 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm):
     plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
     plt.xticks(list(distances.keys()))
     plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
+    plt.clf()
 
 
 # Save a histogram to png file with all the parameters specified
@@ -355,9 +358,10 @@ def build_second_histogram(list_health, N, l, iter_num, x, y, selection_type, pm
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = calc_hamming_to_ideal(list_health, l)
-    plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
+    plt.bar(list(distances.keys()), distances.values(), color='red', width=0.9)
     plt.xticks(list(distances.keys()))
     plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
+    plt.clf()
 
 
 # Save a histogram to png file with all the parameters specified
@@ -371,9 +375,10 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm):
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = distances_for_wild_type(pop, l)
-    plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
+    plt.bar(list(distances.keys()), distances.values(), color='blue', width=0.9)
     plt.xticks(list(distances.keys()))
     plt.savefig(results_dir + "/iter={0};pm={1}.png".format(iter_num, pm))
+    plt.clf()
 
 
 # Build a line plot with mean health for each iteration and save to png
@@ -382,10 +387,12 @@ def build_line_graph(health_values, N, l, x, y, selection_type, pm):
     script_dir = os.path.dirname(__file__)
     results_dir = os.path.join(script_dir,
                                'LineGraph; Selection={0},N={1};l={2};X={3};Y={4}/'.format(selection_type, N, l, x,
-                                                                                              y))
-    plt.clf()
+                                                                                             y))
+    if not os.path.isdir(results_dir):
+        os.makedirs(results_dir)
     plt.plot(health_values)
-    plt.savefig("pm={0}.png".format(pm))
+    plt.savefig(results_dir + "/pm={0}.png".format(pm))
+    plt.clf()
 
 
 '''  sample = pop[:-3:-1]  # take two last chromosomes from population
@@ -639,6 +646,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, fe
         if i == Properties.CONST_STOP_ALGORITHM:
             save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, -1, indexes_patogenic_muted)
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list)
+            build_line_graph(health_during_generations, N, l, x, y, type_of_selection, pm)
 
 
 

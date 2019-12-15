@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from math import floor
 getcontext().prec = 6
 
+
 class UnknownCoding(Exception):
     pass
 
@@ -425,7 +426,7 @@ def calc_hamming_to_ideal(list_health, l, N, method=1):
             dis = l - ch_health
             frequency[dis] = frequency.get(dis) + 1
     elif method == 2:
-        frequency = [0]*N
+        frequency = {new_list: 0 for new_list in range(l + 1)}
     else:
         frequency = {0: 0, encode_key(l-0.1): 0, encode_key(l - (Decimal(l - Properties.CONST_K*l/100))): 0}
         for ch_health in list_health:

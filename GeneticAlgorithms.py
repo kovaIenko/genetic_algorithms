@@ -5,12 +5,9 @@ import numpy as np  # linear algebra
 from collections import Counter
 from decimal import *
 import os
-
-getcontext().prec = 6
-
 import matplotlib.pyplot as plt
 from math import floor
-
+getcontext().prec = 6
 
 class UnknownCoding(Exception):
     pass

@@ -5,11 +5,9 @@ import numpy as np  # linear algebra
 from collections import Counter
 from decimal import *
 import os
-
-getcontext().prec = 6
-
 import matplotlib.pyplot as plt
 from math import floor
+getcontext().prec = 6
 
 
 class UnknownCoding(Exception):
@@ -354,13 +352,13 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
 # Save a histogram to png file with all the parameters specified
 # (a histogram with frequencies of Hamming distances to the optimal chromosome from each chromosome in the population)
 
-def build_second_histogram(list_health, N, l, iter_num, x, y, selection_type, pm, attempt, init_type):
+def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_type, pm, attempt, init_type):
     script_dir = os.path.dirname(__file__) + '/Plots'
     results_dir = os.path.join(script_dir,
                                'OptimalHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type + 1, attempt, selection_type, N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
-    distances = calc_hamming_to_ideal(list_health, l, N, init_type)
+    distances = calc_hamming_to_ideal(pop, list_health, l, N, init_type)
     plt.bar(list(distances.keys()), distances.values(), color='red', width=0.9)
     plt.xticks(list(distances.keys()))
     plt.savefig(results_dir + "/X={0};Y={1};iter={2};pm={3}.png".format(x, y, iter_num, pm))
@@ -582,7 +580,7 @@ mutation_probability = 0.001113
 
 def build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type):
     build_first_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
-    build_second_histogram(health_list, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
+    build_second_histogram(pop, health_list, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
 
 
 '''
@@ -642,7 +640,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, feat
     health_list = init_health_list(pop, l, N,  init_type)
 
     border_pathogenic_mutation = 0
-    indexes_pathogenic_muted = None
+    arr_pathogenic_indexes = None
 
     if features:
         border_pathogenic_mutation = num_of_pathogenic_genes(N, l, Properties.CONST_PATHOGENIC_PERCENT)

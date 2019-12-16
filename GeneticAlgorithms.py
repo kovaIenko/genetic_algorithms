@@ -296,11 +296,11 @@ def hamming_distance(a, b):
 
 
 # Return the dictionary of the form { distance : frequency }
-def calc_all_distances(list_, N_, l_):
+def calc_all_distances(pop, N_, l_):
     frequency = {new_list: 0 for new_list in range(l_ + 1)}
     for i in range(0, N_):
         for j in range(i + 1, N_):
-            dis = hamming(list_[i], list_[j])
+            dis = hamming(pop[i], pop[j])
             frequency[dis] = frequency.get(dis) + 1
     return frequency
 
@@ -421,14 +421,17 @@ def encode_key(numb):
     return int(numb*10000)
 
 
-def calc_hamming_to_ideal(list_health, l, N, method=1):
+def calc_hamming_to_ideal(pop, list_health, l, N, method=1):
     if method == 1:
         frequency = {new_list: 0 for new_list in range(l + 1)}
         for ch_health in list_health:
             dis = l - ch_health
             frequency[dis] = frequency.get(dis) + 1
     elif method == 2:
-        frequency = [0]*N
+        frequency = {new_list: 0 for new_list in range(l + 1)}
+        for ch in pop:
+            dis = l - health_of_1(ch)
+            frequency[dis] = frequency.get(dis) + 1
     else:
         frequency = {0: 0, encode_key(l-0.1): 0, encode_key(l - (Decimal(l - Properties.CONST_K*l/100))): 0}
         for ch_health in list_health:

@@ -360,7 +360,7 @@ def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_typ
                                'OptimalHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type, attempt, selection_type, N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
-    distances = calc_hamming_to_ideal(pop, list_health, l, N, init_type)
+    distances = calc_hamming_to_ideal(pop, list_health, l, init_type)
     plt.bar(list(distances.keys()), distances.values(), color='red', width=0.9)
     plt.xticks(list(distances.keys()))
     plt.savefig(results_dir + "/X={0};Y={1};iter={2};pm={3}.png".format(x, y, iter_num, pm))
@@ -408,9 +408,9 @@ def build_line_graph(health_values, N, l, x, y, selection_type, pm, attempt, ini
 def init_health_list(pop, l, N, method=1):
     list_of_health = []
     if method == 1:
-       for ch in pop:
-         list_of_health.append(health_of_1(ch))
-       return list_of_health
+        for ch in pop:
+            list_of_health.append(health_of_1(ch))
+        return list_of_health
     elif method == 2:
         return None
     else:
@@ -421,7 +421,7 @@ def encode_key(numb):
     return int(numb*10000)
 
 
-def calc_hamming_to_ideal(pop, list_health, l, N, method=1):
+def calc_hamming_to_ideal(pop, list_health, l, method=1):
     if method == 1:
         frequency = {new_list: 0 for new_list in range(l + 1)}
         for ch_health in list_health:
@@ -542,87 +542,12 @@ def num_of_pathogenic_genes(N, l, percentage):
     return N * l * percentage
 
 
-'''
-def execution(l, N):
-    workbook = xlsxwriter.Workbook('data.numbers')
-    worksheet = workbook.add_worksheet()
-    pop = generate_population(l, N, 0, 1)
-    pm = 1 / (10 * l)
-    sum_mean_health = Decimal(0)
-    list_health = init_health_list(pop, health_of_1)
-    for i in range(Properties.CONST_STOP_ALGORITHM):
-        mean = healthMean(N, list_health)
-        if should_be_stopped(worksheet, pop, N, l, i, sum_mean_health, mean):
-            sum_mean_health = 0
-            break
-        sum_mean_health += mean
-        pop, list_health = selRoulette(pop, health_of_1, list_health, N)
-        print("after roulette")
-        print(pop)
-        print(list_health)
-        pop, list_health, pathogenic_muted = mutation(pop, pm, l, list_health, health_of_1)
-        print("after mutation")
-        print(pop)
-        if i % 10 == 0:
-            build_first_histogram(pop, N, l, i, 0, 100, "Roulette", pm)
-            build_second_histogram(list_health, N, l, i, 0, 100, "Roulette", pm)
-            build_third_histogram(pop, N, l, i, 0, 100, "Roulette", pm)
-        ### print("- - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
-    workbook.close()'''
-
-# l = 8
-# N = 10
-# execution(l, N)
-
-mutation_probability = 0.001113
-
-
 # At each h iterations we build only histograms for pairwise Hamming distances & Hamming distances to the optimal
 # chromosome
 
 def build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type):
     build_first_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
     build_second_histogram(pop, health_list, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
-
-
-'''
-# For the first initialization type
-def run_genetic_algorithm(l, N, X, Y, pm, type_of_selection):
-    pop = generate_population(l, N, X, Y)
-    counter = 0
-    x = X * 100
-    y = Y * 100
-    health_during_generations = []
-    health_list = init_health_list(pop, health_of_1)
-    for i in range(1, Properties.CONST_STOP_ALGORITHM + 1):
-        print("# Iteration number {0}".format(i))
-        previous_mean_health = healthMean(N, health_list)
-        print("Previous mean health: ")
-        print(previous_mean_health)
-        if i % Properties.CONST_FREQUENCY_PRINT_DIAGRAM == 0:
-            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list)
-        pop, health_list = selRoulette(pop, health_of_1, health_list, N)
-        pop, health_list, pathogenic_muted = mutation(pop, pm, l, health_list, health_of_1)
-        current_mean_health = healthMean(N, health_list)
-        print("Mean health after mutation:")
-        print(current_mean_health)
-        health_during_generations.append(current_mean_health)
-        if np.abs(previous_mean_health - current_mean_health) < Properties.PRECISION and i > 1:
-            counter = counter + 1
-        else:
-            counter = 0
-        if counter >= 10:
-            print("Mean health stays the same during 10 iterations -> algorithm was stopped")
-            print("Iteration number: ", counter)
-            build_line_graph(health_during_generations, N, l, x, y, type_of_selection, pm)
-            save_to_file_the_end(1, 1, i, health_list, N, l, pm, type_of_selection)
-            break
-        if i == Properties.CONST_STOP_ALGORITHM:
-            save_to_file_the_end(1, 1, i, health_list, N, l, pm, type_of_selection)
-            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list)
-
-
-run_genetic_algorithm_with_roulette(4, 100, 0, 1, mutation_probability)'''
 
 
 def manage_pathogenic_ch(i, arr_of_indexes, pathogenic_muted_counter, limit_pathogenic_mutation):
@@ -632,16 +557,14 @@ def manage_pathogenic_ch(i, arr_of_indexes, pathogenic_muted_counter, limit_path
     return arr_of_indexes, pathogenic_muted_counter
 
 
-
-def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, init_type, features=None):
+def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, features=None):
     type_of_selection = 'Roulette'
     pop = generate_population(l, N, X, Y)
     counter = 0
     x = X * 100
     y = Y * 100
     mean_health_during_generations = []
-    #health_list = init_health_list(pop, l, N, init_type)
-    health_list = [health_func(ch) for ch in pop]
+    health_list = init_health_list(pop, l, N, init_type)
     border_pathogenic_mutation = 0
     arr_pathogenic_indexes = None
 
@@ -680,60 +603,11 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, in
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
             build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
-            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, -1,
+            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, x, y, -1,
                                  arr_pathogenic_indexes)
 
 #features = list_features_of_ch(100, 100)
-#run_genetic_algorithm_with_roulette(65654, 100, 100, 0.5, 0.5, 0.000295, 2)
-
-def run_genetic_algorithm_with_tournament(attempt, l, N, X, Y, pm, health_func, init_type, t, features=None):
-    type_of_selection = 'Tournament'
-    pop = generate_population(l, N, X, Y)
-    counter = 0
-    x = X * 100
-    y = Y * 100
-    mean_health_during_generations = []
-    health_list = init_health_list(pop, health_func)
-
-    border_pathogenic_mutation = 0
-    pathogenic_muted_numb = 0
-    indexes_pathogenic_muted = None
-
-    if features:
-        border_pathogenic_mutation = num_of_pathogenic_genes(N, l, Properties.CONST_PATHOGENIC_PERCENT)
-        indexes_pathogenic_muted = []
-
-    for i in range(1, Properties.CONST_STOP_ALGORITHM + 1):
-        previous_mean_health = healthMean(N, health_list)
-        if i % Properties.CONST_FREQUENCY_PRINT_DIAGRAM == 0:
-            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
-        pop, health_list = tournament_selection(pop, health_func, health_list, t)
-        pop, health_list, pathogenic_muted_bool = mutation(pop, pm, l, health_func, health_list,  features)
-
-        if features:
-            indexes_pathogenic_muted.append(
-                manage_pathogenic_ch(i, pathogenic_muted_bool, border_pathogenic_mutation, pathogenic_muted_numb))
-
-        current_mean_health = healthMean(N, health_list)
-        mean_health_during_generations.append(current_mean_health)
-
-        if np.abs(previous_mean_health - current_mean_health) < Properties.PRECISION and i > 1:
-            counter = counter + 1
-        else:
-            counter = 0
-        if counter >= 10:
-            build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt,
-                                  init_type)  # Distances to the wild type at the end of epoch
-            build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
-            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, t,
-                                 indexes_pathogenic_muted)
-            break
-        if i == Properties.CONST_STOP_ALGORITHM:
-            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
-            build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
-            build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
-            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, t,
-                                 indexes_pathogenic_muted)
+run_genetic_algorithm_with_roulette(65654, 100, 100, 0.5, 0.5, 0.000295, 2)
 
 def mutation_probabilities_for_roulette(l):
     px = 1 / (10 * l)
@@ -762,13 +636,12 @@ def get_init_data():
     init_3 = [(100, 0), (90, 10), (50, 50)]
 
     pop_ratio = [init_1, init_2, init_3]
-    health_funcs = [health_of_1, health_of_2, health_of_3]
-    return l_N, pop_ratio, health_funcs
+    return l_N, pop_ratio
 
 
 # I do for selRoulette and tour = 12
 def perform_roulette():
-    l_N, pop_ratio, health_funcs = get_init_data()
+    l_N, pop_ratio = get_init_data()
     features = None
 
     for type_ind, list_ratios in enumerate(pop_ratio):
@@ -780,27 +653,6 @@ def perform_roulette():
                         features = list_features_of_ch(n, l)
                     for pm in arr_mutation_prob:
                         for attempt in range(3):
-                            run_genetic_algorithm_with_roulette(attempt + 1, l, n, x / 100, y / 100, pm,
-                                                                health_funcs[type_ind], type_ind+1, features)
+                          run_genetic_algorithm_with_roulette(attempt + 1, l, n, x / 100, y / 100, pm, type_ind+1, features)
 
-perform_roulette()
-# Nika: I do for tournament t = 2 and t = 4
-
-def perform_tournament():
-    l_N, pop_ratio, health_funcs = get_init_data()
-    features = None
-    for t in [2, 4, 12]:
-        for type_ind, list_ratios in enumerate(pop_ratio):
-            for x, y in list_ratios:
-                for l, list_N in l_N:
-                    arr_mutation_prob = mutation_probabilities_for_tournament(t, l)
-                    for n in list_N:
-                        if type_ind == 2:  # 3 type of init
-                            features = list_features_of_ch(n, l)
-                        for pm in arr_mutation_prob:
-                            for attempt in range(3):
-                                run_genetic_algorithm_with_tournament(attempt + 1, l, n, x / 100, y / 100, pm,
-                                                                      health_funcs[type_ind], type_ind, t, features)
-
-
-#perform_tournament()
+#perform_roulette()

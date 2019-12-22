@@ -1,5 +1,6 @@
-attempt;iteration_stop;mutation %;selection;L - len of ch;N - number of ch;X;Y;health_mean;health_best;dev_mean_health;dev_best_health;polym_genes(%);indexes_patogenic
-
-65654;11;0.000295;Roulette;100;100;0.5;0.5;100;100;0;0;0.0
-65654;11;0.000295;Roulette;100;100;0.5;0.5;100;100;0;0;0.0
-65654;11;0.000295;Roulette;100;100;0.5;0.5;100;100;0;0;0.0
+attempt,init_type,iteration,N,l,X,Y,pm,type_of_selection,health_mean,health_best,deviation_meanHealth_and_optimum,deviation_bestHealth_and_optimum,percent_polym_genes,arr_neutral_iter
+1,1,100,100,10,0.0,100.0,0.000507,Roulette,9.96,10,0.04,0,0.4,
+2,1,100,100,10,0.0,100.0,0.000507,Roulette,9.97,10,0.03,0,0.3,
+3,1,100,100,10,0.0,100.0,0.000507,Roulette,8.92,9,1.08,-1,10.8,
+1,1,100,100,10,0.0,100.0,0.001113,Roulette,8.91,10,1.09,0,10.9,
+2,1,100,100,10,0.0,100.0,0.001113,Roulette,9.69,10,0.31,0,3.1,

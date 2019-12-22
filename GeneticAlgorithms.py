@@ -501,31 +501,67 @@ def save_to_file(worksheet, dict, iterate):
         col = col + 1
 
 
-def save_to_file_the_end(attempt, iteration, list_of_health, N, l, pm, type_of_selection, X, Y, params_tour=-1, arr_pathogenic_iter=None):
+def save_to_file_the_end(attempt, iteration, list_of_health, N, l, pm, type_of_selection, X, Y, init_type, params_tour=-1, arr_neutral_iter=None):
+    '''
+
     row = []
     row.append(attempt)
+    row.append(init_type)
     row.append(iteration)
     row.append(pm)
     if type_of_selection == "Tournament":
         type_of_selection = type_of_selection + ' ' + str(params_tour)
     row.append(type_of_selection)
+    row_map["type_of_selection"] = type_of_selection
     row.append(l)
     row.append(N)
-    row.append(X)
-    row.append(Y)
+    row.append(X*100)
+    row.append(Y*100)
     row.append(healthMean(N, l, list_of_health))
     row.append(bestHealth(list_of_health, l))
     row.append(deviation_meanHealth_and_optimum(list_of_health, N, l))
     row.append(deviation_bestHealth_and_optimum(list_of_health, l))
     row.append(percent_polym_genes(list_of_health, l, N))
-    if arr_pathogenic_iter:
-        row.append(arr_pathogenic_iter)
-    print(row)
+    row_map["health_mean"] = healthMean(N, l, list_of_health)
+    row_map["health_best"] = bestHealth(list_of_health, l)
+    row_map["deviation_meanHealth_and_optimum"] = deviation_meanHealth_and_optimum(list_of_health, N, l)
+    row_map["deviation_bestHealth_and_optimum"] = deviation_bestHealth_and_optimum(list_of_health, l)
+    row_map["percent_polym_genes"] = percent_polym_genes(list_of_health, l, N)
+    if arr_neutral_iter:
+        row.append(arr_neutral_iter)
+        row_map["arr_neutral_iter": arr_neutral_iter]
+    #print(row)
+    print(row_map)
     file = open('data.csv', 'a')
     with file:
         writer = csv.writer(file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(row)
     file.close()
+    '''
+
+    csv_columns = ['attempt', 'init_type', 'iteration', 'N', 'l', 'X', 'Y', 'pm', 'type_of_selection', 'health_mean', 'health_best', 'deviation_meanHealth_and_optimum', 'deviation_bestHealth_and_optimum', 'percent_polym_genes', 'arr_neutral_iter']
+    row_map = {"attempt": attempt, "init_type": init_type, "N": N, "l": l, "X": X*100, "Y": Y*100, "iteration": iteration, "pm": pm}
+    if type_of_selection == "Tournament":
+        type_of_selection = type_of_selection + ' ' + str(params_tour)
+    row_map["type_of_selection"] = type_of_selection
+    if arr_neutral_iter:
+        row_map["arr_neutral_iter"] = arr_neutral_iter
+    row_map["health_mean"] = healthMean(N, l, list_of_health)
+    row_map["health_best"] = bestHealth(list_of_health, l)
+    row_map["deviation_meanHealth_and_optimum"] = deviation_meanHealth_and_optimum(list_of_health, N, l)
+    row_map["deviation_bestHealth_and_optimum"] = deviation_bestHealth_and_optimum(list_of_health, l)
+    row_map["percent_polym_genes"] = percent_polym_genes(list_of_health, l, N)
+    csv_file = "data.csv"
+    try:
+        with open(csv_file, 'a') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+            if os.stat(csv_file).st_size == 0:
+                writer.writeheader()
+            writer.writerow(row_map)
+    except IOError:
+        print("I/O error")
+
+    print(row_map)
 
 
 def should_be_stopped(i, sum_mean_health, current_mean_health):
@@ -537,8 +573,9 @@ def should_be_stopped(i, sum_mean_health, current_mean_health):
     return False
 
 
+# TO CHANGE TO NEUTRAL
 # how many mutations we can do through the all iterations
-def num_of_pathogenic_genes(N, l, percentage):
+def num_of_neutral_genes(N, l, percentage):
     return N * l * percentage
 
 
@@ -642,12 +679,13 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, in
     mean_health_during_generations = []
     #health_list = init_health_list(pop, l, N, init_type)
     health_list = [health_func(ch) for ch in pop]
-    border_pathogenic_mutation = 0
-    arr_pathogenic_indexes = None
+    #border_pathogenic_mutation = 0
+    #arr_pathogenic_indexes = None
+    arr_neutral_indexes = None
 
     if features:
-        border_pathogenic_mutation = num_of_pathogenic_genes(N, l, Properties.CONST_PATHOGENIC_PERCENT)
-        arr_pathogenic_indexes = []
+        border_neutral_mutation = num_of_neutral_genes(N, l, Properties.CONST_TYPE_NEUTRAL)
+        arr_neutral_indexes = []
 
     for i in range(1, Properties.CONST_STOP_ALGORITHM + 1):
 
@@ -657,31 +695,33 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, in
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
 
         pop, health_list = selRoulette(pop, health_list, N)
-        pop, health_list, pathogenic_muted_counter = mutation(pop, pm, l, health_list, features)
+        pop, health_list, neutral_muted_counter = mutation(pop, pm, l, health_list, features)
 
         if features:
-            pathogenic_muted_counter += pathogenic_muted_counter
-            arr_pathogenic_indexes, pathogenic_muted_counter = manage_pathogenic_ch(i, arr_pathogenic_indexes, pathogenic_muted_counter, border_pathogenic_mutation)
+            neutral_muted_counter += neutral_muted_counter
+            arr_neutral_indexes, neutral_muted_counter = manage_pathogenic_ch(i, arr_neutral_indexes, neutral_muted_counter, border_neutral_mutation)
         current_mean_health = healthMean(N, l,  health_list)
         mean_health_during_generations.append(current_mean_health)
-
-        if np.abs(previous_mean_health - current_mean_health) < Properties.PRECISION and i > 1:
-            counter = counter + 1
-        else:
-            counter = 0
+        if init_type != 2: # we don't need to stop algorithm because of similar mean health in case of the 2nd init type
+            if np.abs(previous_mean_health - current_mean_health) < Properties.PRECISION and i > 1:
+                counter = counter + 1
+            else:
+                counter = 0
+        # If mean health between populations doesn't differ much
         if counter >= 10:
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
             build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type) # Distances to the wild type at the end of epoch
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
-            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, -1,
-                                 arr_pathogenic_indexes)
+            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, init_type, -1,
+                                 arr_neutral_indexes)
             break
+        # If final iteration
         if i == Properties.CONST_STOP_ALGORITHM:
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
             build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
-            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, -1,
-                                 arr_pathogenic_indexes)
+            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, init_type, -1,
+                                 arr_neutral_indexes)
 
 #features = list_features_of_ch(100, 100)
 #run_genetic_algorithm_with_roulette(65654, 100, 100, 0.5, 0.5, 0.000295, 2)
@@ -752,9 +792,9 @@ def mutation_probabilities_for_tournament(t, l):
 
 
 def get_init_data():
-    N_1 = [100, 200, 800, 1000, 2000]
-    N_2 = [100, 200, 800, 1000, 2000]
-    l_N = [(10, N_1), (20, N_1), (80, N_1), (100, N_2), (200, N_2), (800, N_2), (1000, N_2), (2000, N_2), (8000, N_2)]
+    N_1 = [100, 200]#, 800, 1000, 2000]
+    N_2 = [100, 200]#, 800, 1000, 2000]
+    l_N = [(10, N_1), (20, N_1), (80, N_1), (100, N_2), (200, N_2)]#, (800, N_2), (1000, N_2), (2000, N_2), (8000, N_2)]
 
     # X and Y
     init_1 = [(0, 100)]

@@ -502,9 +502,10 @@ def save_to_file(worksheet, dict, iterate):
 
 
 def save_to_file_the_end(attempt, iteration, list_of_health, N, l, pm, type_of_selection, X, Y, init_type, params_tour=-1, arr_neutral_iter=None):
-    '''
 
     row = []
+    row_map = {"attempt": attempt, "init_type": init_type, "N": N, "l": l, "X": X * 100, "Y": Y * 100,
+               "iteration": iteration, "pm": pm}
     row.append(attempt)
     row.append(init_type)
     row.append(iteration)
@@ -537,8 +538,9 @@ def save_to_file_the_end(attempt, iteration, list_of_health, N, l, pm, type_of_s
         writer = csv.writer(file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(row)
     file.close()
-    '''
 
+    # Another variant with dynamically defining csv columns
+    '''
     csv_columns = ['attempt', 'init_type', 'iteration', 'N', 'l', 'X', 'Y', 'pm', 'type_of_selection', 'health_mean', 'health_best', 'deviation_meanHealth_and_optimum', 'deviation_bestHealth_and_optimum', 'percent_polym_genes', 'arr_neutral_iter']
     row_map = {"attempt": attempt, "init_type": init_type, "N": N, "l": l, "X": X*100, "Y": Y*100, "iteration": iteration, "pm": pm}
     if type_of_selection == "Tournament":
@@ -562,6 +564,7 @@ def save_to_file_the_end(attempt, iteration, list_of_health, N, l, pm, type_of_s
         print("I/O error")
 
     print(row_map)
+    '''
 
 
 def should_be_stopped(i, sum_mean_health, current_mean_health):

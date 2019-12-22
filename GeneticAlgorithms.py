@@ -513,7 +513,7 @@ def save_to_file_the_end(pop, attempt, iteration, list_of_health, N, l, pm, type
     # Another variant with dynamically defining csv columns
 
     csv_columns = ['attempt', 'method', 'iteration', 'N', 'l', 'X', 'Y', 'pm', 'selection', 'health_mean', 'health_best', 'deviation_meanHealth_and_optimum', 'deviation_bestHealth_and_optimum', 'percent_polym_genes', 'arr_neutral_iter']
-    row_map = {"attempt": attempt, "method": init_type, "N": N, "l": l, "X": X*100, "Y": Y*100, "iteration": iteration, "pm": pm}
+    row_map = {"attempt": attempt, "method": init_type, "N": N, "l": l, "X": X, "Y": Y, "iteration": iteration, "pm": pm}
     if type_of_selection == "Tournament":
         type_of_selection = type_of_selection + ' ' + str(params_tour)
     row_map["selection"] = type_of_selection
@@ -568,12 +568,10 @@ def manage_pathogenic_ch(i, arr_of_indexes, neutral_muted_counter, limit_neutral
     return arr_of_indexes, neutral_muted_counter
 
 
-def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, features=None):
+def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, features=None):
     type_of_selection = 'Roulette'
-    pop = generate_population(l, N, X, Y)
+    pop = generate_population(l, N, x/100, y/100)
     counter = 0
-    x = X * 100
-    y = Y * 100
     mean_health_during_generations = []
     health_list = init_health_list(pop, l, N, init_type)
 
@@ -613,7 +611,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, feat
             build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt,
                                   init_type)  # Distances to the wild type at the end of epoch
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
-            save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, X, Y, init_type, -1,
+            save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type, -1,
                                  arr_neutral_indexes)
             break
         # If final iteration
@@ -621,12 +619,8 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, feat
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
             build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
-            save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, X, Y, init_type,  -1,
+            save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type,  -1,
                                  arr_neutral_indexes)
-
-features = list_features_of_ch(100, 100)
-run_genetic_algorithm_with_roulette(65654, 100, 100, 0.5, 0.5, 0.000295, 1)
-
 
 def mutation_probabilities_for_roulette(l):
     px = 1 / (10 * l)
@@ -674,6 +668,6 @@ def perform_roulette():
                         features = list_features_of_ch(n, l)
                     for pm in arr_mutation_prob:
                         for attempt in range(3):
-                          run_genetic_algorithm_with_roulette(attempt + 1, l, n, x / 100, y / 100, pm, type_ind+1, features)
+                          run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y , pm, type_ind+1, features)
 
-#perform_roulette()
+perform_roulette()

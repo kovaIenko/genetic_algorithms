@@ -417,7 +417,6 @@ def build_line_graph(health_values, N, l, x, y, selection_type, pm, attempt, ini
 
  '''
 
-# Nika: I suppose we don't need this method anymore
 
 def init_health_list(pop, l, N, method=1):
     list_of_health = []
@@ -695,8 +694,8 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, in
     x = X * 100
     y = Y * 100
     mean_health_during_generations = []
-    # health_list = init_health_list(pop, l, N, init_type)
-    health_list = [health_func(ch) for ch in pop]
+    health_list = init_health_list(pop, l, N, init_type)
+    #health_list = [health_func(ch) for ch in pop]
     # border_pathogenic_mutation = 0
     # arr_pathogenic_indexes = None
     arr_neutral_indexes = None

@@ -310,22 +310,26 @@ def calculate_individual_fitness(chromosome):
 
 # We select random t chromosomes, compare them with each other, choose the fittest one and send it to the mating pool. Then chromosomes are returned to the initial population
 # The process continues until we select N chromosomes for a new population
-def tournament_selection(population, health_func, list_of_health, t):
+def tournament_selection(pop, health_list, t):
     mating_pool = []
-    N = len(population)
-    for chromosome in population:
-        random_chromosomes = []
-        health_of_random = []
+    N = len(pop)
+    rearranged_health_list = []
+    for chromosome in pop:
+        random_chr_health = dict()
         for i in range(0, t):
             rand_index = np.random.randint(0, N)
-            random_chromosomes.append(population[rand_index])
-            health_of_random.append(health_func(random_chromosomes[i]))
-            # health_of_random.append(calculate_individual_fitness(random_chromosomes[i]))
-        ##print(random_chromosomes)
-        index_of_fittest = health_of_random.index(max(health_of_random))
-        list_of_health[rand_index] = health_of_random[index_of_fittest]
-        mating_pool.append(random_chromosomes[index_of_fittest])
-    return mating_pool, list_of_health
+            random_chr_health[rand_index] = health_list[rand_index]
+        index_of_fittest = max(random_chr_health, key=lambda key: random_chr_health[key])
+        # A dictionary where key is index of randomly chosen chromosome, value - its health
+        #print(random_chr_health)
+        #print('Index of the fittest')
+        #print(index_of_fittest)
+        mating_pool.append(pop[index_of_fittest])
+        # Since health_list for the mating pool != health_list for initial population, we need a new one
+        rearranged_health_list.append(random_chr_health[index_of_fittest])
+
+    return mating_pool, rearranged_health_list
+
 
 
 # Save a histogram to png file with all the parameters specified
@@ -662,7 +666,7 @@ def perform_roulette():
         for x, y in list_ratios:
             for l, list_N in l_N:
                 arr_mutation_prob = mutation_probabilities_for_roulette(
-                    l)  # ми ж хотіли використовувати контстанти з файлу
+                    l)
                 for n in list_N:
                     if type_ind == 2:  # 3 type of init
                         features = list_features_of_ch(n, l)
@@ -670,4 +674,91 @@ def perform_roulette():
                         for attempt in range(3):
                           run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y , pm, type_ind+1, features)
 
-perform_roulette()
+#perform_roulette()
+
+def run_genetic_algorithm_with_tournament(attempt, l, N, x, y, pm, init_type, t, features=None):
+    type_of_selection = 'Tournament'
+    pop = generate_population(l, N, x/100, y/100)
+    counter = 0
+    mean_health_during_generations = []
+    health_list = init_health_list(pop, l, N, init_type)
+
+    border_neutral_mutation = 0
+    muted_counter = 0
+    arr_neutral_indexes = None
+
+    if features:
+        border_neutral_mutation = num_of_neutral_genes(N, l, Properties.CONST_NEUTRAL_PERCENT)
+        arr_neutral_indexes = []
+
+    for i in range(1, Properties.CONST_STOP_ALGORITHM + 1):
+
+        previous_mean_health = healthMean(N, l, health_list) if init_type != 2 else l
+
+        if i % Properties.CONST_FREQUENCY_PRINT_DIAGRAM == 0:
+            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
+        pop, health_list = tournament_selection(pop, health_list, t)
+
+        pop, health_list, neutral_muted_counter = mutation(pop, pm, l, health_list, features)
+
+        if features:
+            muted_counter += neutral_muted_counter
+            arr_neutral_indexes, muted_counter = manage_pathogenic_ch(i, arr_neutral_indexes,
+                                                                              muted_counter,
+                                                                              border_neutral_mutation)
+        current_mean_health = healthMean(N, l, health_list)
+        mean_health_during_generations.append(current_mean_health)
+        if init_type != 2:  # we don't need to stop algorithm because of similar mean health in case of the 2nd init type
+            if np.abs(previous_mean_health - current_mean_health) < Properties.PRECISION and i > 1:
+                counter = counter + 1
+            else:
+                counter = 0
+        # If mean health between populations doesn't differ much
+        if counter >= 10:
+            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
+            build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt,
+                                  init_type)  # Distances to the wild type at the end of epoch
+            build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
+            save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type, t,
+                                 arr_neutral_indexes)
+            break
+        # If final iteration
+        if i == Properties.CONST_STOP_ALGORITHM:
+            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
+            build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
+            build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
+            save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type,  t,
+                                 arr_neutral_indexes)
+
+
+def perform_tournament():
+    l_N, pop_ratio = get_init_data()
+    t_params = [2, 4, 12]
+    features = None
+    for t in t_params:
+        for type_ind, list_ratios in enumerate(pop_ratio):
+            for x, y in list_ratios:
+                for l, list_N in l_N:
+                    arr_mutation_prob = mutation_probabilities_for_tournament(t, l)
+                    for n in list_N:
+                        if type_ind == 2:  # 3 type of init
+                            features = list_features_of_ch(n, l)
+                        for pm in arr_mutation_prob:
+                            for attempt in range(3):
+                                run_genetic_algorithm_with_tournament(attempt + 1, l, n, x, y, pm, type_ind + 1, t, features)
+
+
+perform_tournament()
+
+
+# Testing tournament selection
+'''
+pop = generate_population(10, 5, 0, 1)
+print(pop)
+health = [health_of_1(ch) for ch in pop]
+print(health)
+pop, health = tournament_selection(pop, health, 2)
+print("after tournament:")
+print(np.asarray(pop))
+print(health)
+'''

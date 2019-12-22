@@ -44,7 +44,8 @@ def health_of_1(ch):
 
 
 # the health func for third type of evaluation
-def health_of_3(type_, l):
+def health_of_3(ch, type_=None):
+    l = len(ch)
     if type_ == Properties.CONST_TYPE_NEUTRAL:
         return l
     elif type_ == Properties.CONST_TYPE_LETHAL:
@@ -53,7 +54,8 @@ def health_of_3(type_, l):
         return l - l*Properties.CONST_K/100
 
 
-def health_of_2(l):
+def health_of_2(ch):
+    l = len(ch)
     return l
 
 def sort_sort(pop, list_of_health):
@@ -339,7 +341,7 @@ def tournament_selection(population, health_func, list_of_health, t):
 def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type):
     script_dir = os.path.dirname(__file__) + '/Plots'
     results_dir = os.path.join(script_dir,
-                               'HammingHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type + 1, attempt, selection_type, N, l))
+                               'HammingHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type, attempt, selection_type, N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = calc_all_distances(pop, N, l)
@@ -355,7 +357,7 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
 def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_type, pm, attempt, init_type):
     script_dir = os.path.dirname(__file__) + '/Plots'
     results_dir = os.path.join(script_dir,
-                               'OptimalHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type + 1, attempt, selection_type, N, l))
+                               'OptimalHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type, attempt, selection_type, N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = calc_hamming_to_ideal(pop, list_health, l, N, init_type)
@@ -371,7 +373,7 @@ def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_typ
 def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type):
     script_dir = os.path.dirname(__file__) + '/Plots'
     results_dir = os.path.join(script_dir,
-                               'WildTypeHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type + 1, attempt, selection_type, N, l))
+                               'WildTypeHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type, attempt, selection_type, N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = distances_for_wild_type(pop, l)
@@ -386,7 +388,7 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
 def build_line_graph(health_values, N, l, x, y, selection_type, pm, attempt, init_type):
     script_dir = os.path.dirname(__file__) + '/Plots'
     results_dir = os.path.join(script_dir,
-                               'LineGraph;InitType={0};Attempt={1};Selection={2},N={3};l={4};/'.format(init_type + 1, attempt, selection_type, N, l))
+                               'LineGraph;InitType={0};Attempt={1};Selection={2},N={3};l={4};/'.format(init_type, attempt, selection_type, N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     plt.plot(health_values)
@@ -630,15 +632,16 @@ def manage_pathogenic_ch(i, arr_of_indexes, pathogenic_muted_counter, limit_path
     return arr_of_indexes, pathogenic_muted_counter
 
 
-def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, features=None):
+
+def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, health_func, init_type, features=None):
     type_of_selection = 'Roulette'
     pop = generate_population(l, N, X, Y)
     counter = 0
     x = X * 100
     y = Y * 100
     mean_health_during_generations = []
-    health_list = init_health_list(pop, l, N,  init_type)
-
+    #health_list = init_health_list(pop, l, N, init_type)
+    health_list = [health_func(ch) for ch in pop]
     border_pathogenic_mutation = 0
     arr_pathogenic_indexes = None
 
@@ -648,7 +651,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, feat
 
     for i in range(1, Properties.CONST_STOP_ALGORITHM + 1):
 
-        previous_mean_health = healthMean(N,  health_list) if health_list else l
+        previous_mean_health = healthMean(N, l, health_list) if init_type != 2 else l
 
         if i % Properties.CONST_FREQUENCY_PRINT_DIAGRAM == 0:
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
@@ -681,158 +684,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, feat
                                  arr_pathogenic_indexes)
 
 #features = list_features_of_ch(100, 100)
-run_genetic_algorithm_with_roulette(65654, 100, 100, 0.5, 0.5, 0.000295, 2)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#run_genetic_algorithm_with_roulette(65654, 100, 100, 0.5, 0.5, 0.000295, 2)
 
 def run_genetic_algorithm_with_tournament(attempt, l, N, X, Y, pm, health_func, init_type, t, features=None):
     type_of_selection = 'Tournament'
@@ -931,7 +783,7 @@ def perform_roulette():
                             run_genetic_algorithm_with_roulette(attempt + 1, l, n, x / 100, y / 100, pm,
                                                                 health_funcs[type_ind], type_ind+1, features)
 
-#perform_roulette()
+perform_roulette()
 # Nika: I do for tournament t = 2 and t = 4
 
 def perform_tournament():

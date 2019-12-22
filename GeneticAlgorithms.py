@@ -7,12 +7,11 @@ from decimal import *
 import os
 import matplotlib.pyplot as plt
 from math import floor
-getcontext().prec = 6
 
+getcontext().prec = 6
 
 class UnknownCoding(Exception):
     pass
-
 
 # generate initial population of size N. each chromosome has a length l
 
@@ -31,17 +30,14 @@ def generate_population(l, N, X, Y, coding="binary"):
             "The generation function hasn't been implemented for '{0}' chromosomes coding".format(coding))
     return general_population
 
-
 '''
 # Calculate the health of all population (alternative method)
 def population_health(pop):
     return sum(map(calculate_individual_fitness, pop))
 '''
 
-
 def health_of_1(ch):
     return np.count_nonzero(ch == 0)
-
 
 # the health func for third type of evaluation
 def health_of_3(ch, type_=None):
@@ -51,8 +47,7 @@ def health_of_3(ch, type_=None):
     elif type_ == Properties.CONST_TYPE_LETHAL:
         return 0.1
     else:
-        return l - l*Properties.CONST_K/100
-
+        return l - l * Properties.CONST_K / 100
 
 def health_of_2(ch):
     l = len(ch)
@@ -64,7 +59,6 @@ def sort_sort(pop, list_of_health):
         return list(pop), list(list_of_health)
     else:
         return pop, list_of_health
-
 
 # RWS
 def selRoulette(pop, list_of_health, N):
@@ -125,13 +119,13 @@ def mutation(pop, percentage, l, list_of_health=None, features=None):
         else:
             current_map = features[index_of_ch]
             type_ = getType(current_map, index_of_gen)
-            pathogenic_muted_counter = increment_pathogenic_counter(pathogenic_muted_counter, type_)
+            pathogenic_muted_counter = increment_neutral_counter(pathogenic_muted_counter, type_)
             list_of_health[index_of_ch] = health_of_3(type_, l)
     return pop, list_of_health, pathogenic_muted_counter
 
 
-def increment_pathogenic_counter(counter, type):
-    if type == Properties.CONST_TYPE_PATHOGENIC:
+def increment_neutral_counter(counter, type):
+    if type == Properties.CONST_TYPE_NEUTRAL:
         counter += 1
     return counter
 
@@ -165,10 +159,9 @@ def list_features_of_ch(N, l):
     return maps
 
 
-
 # Returns a map for a chromosome, where key is a mutation type and value is a list of genes positions
 def mutation_genes_distribution(l, first_neutral_percent=0.135, any_neutral_percent=0.245,
-                                pathogenic_percent = Properties.CONST_PATHOGENIC_PERCENT):
+                                pathogenic_percent=Properties.CONST_PATHOGENIC_PERCENT):
     # Calculate number of mutations of each type
     first_neutral_mutations = floor(first_neutral_percent * l)
     any_neutral_mutations = floor(any_neutral_percent * l)
@@ -341,7 +334,10 @@ def tournament_selection(population, health_func, list_of_health, t):
 def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type):
     script_dir = os.path.dirname(__file__) + '/Plots'
     results_dir = os.path.join(script_dir,
-                               'HammingHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type, attempt, selection_type, N, l))
+                               'HammingHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type,
+                                                                                                        attempt,
+                                                                                                        selection_type,
+                                                                                     N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = calc_all_distances(pop, N, l)
@@ -357,7 +353,10 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
 def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_type, pm, attempt, init_type):
     script_dir = os.path.dirname(__file__) + '/Plots'
     results_dir = os.path.join(script_dir,
-                               'OptimalHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type, attempt, selection_type, N, l))
+                               'OptimalHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type,
+                                                                                                        attempt,
+                                                                                                        selection_type,
+                                                                                                        N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = calc_hamming_to_ideal(pop, list_health, l, init_type)
@@ -373,7 +372,10 @@ def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_typ
 def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type):
     script_dir = os.path.dirname(__file__) + '/Plots'
     results_dir = os.path.join(script_dir,
-                               'WildTypeHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type, attempt, selection_type, N, l))
+                               'WildTypeHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type,
+                                                                                                         attempt,
+                                                                                                         selection_type,
+                                                                                                         N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     distances = distances_for_wild_type(pop, l)
@@ -388,7 +390,10 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
 def build_line_graph(health_values, N, l, x, y, selection_type, pm, attempt, init_type):
     script_dir = os.path.dirname(__file__) + '/Plots'
     results_dir = os.path.join(script_dir,
-                               'LineGraph;InitType={0};Attempt={1};Selection={2},N={3};l={4};/'.format(init_type, attempt, selection_type, N, l))
+                               'LineGraph;InitType={0};Attempt={1};Selection={2},N={3};l={4};/'.format(init_type,
+                                                                                                       attempt,
+                                                                                                       selection_type,
+                                                                                                       N, l))
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     plt.plot(health_values)
@@ -401,7 +406,7 @@ def build_line_graph(health_values, N, l, x, y, selection_type, pm, attempt, ini
   proportion_of_different_genes = scipy.spatial.distance.hamming(sample[0], sample[1])
   print("{}% of different genes".format(proportion_of_different_genes * 100))
   print("The number of different genes is {0}".format(int(proportion_of_different_genes * l)))
- 
+
  '''
 
 
@@ -414,11 +419,11 @@ def init_health_list(pop, l, N, method=1):
     elif method == 2:
         return None
     else:
-        return [l]*N
+        return [l] * N
 
 
 def encode_key(numb):
-    return int(numb*10000)
+    return int(numb * 10000)
 
 
 def calc_hamming_to_ideal(pop, list_health, l, method=1):
@@ -433,7 +438,7 @@ def calc_hamming_to_ideal(pop, list_health, l, method=1):
             dis = l - health_of_1(ch)
             frequency[dis] = frequency.get(dis) + 1
     else:
-        frequency = {0: 0, encode_key(l-0.1): 0, encode_key(l - (Decimal(l - Properties.CONST_K*l/100))): 0}
+        frequency = {0: 0, encode_key(l - 0.1): 0, encode_key(l - (Decimal(l - Properties.CONST_K * l / 100))): 0}
         for ch_health in list_health:
             dis = l - ch_health
             value_ = frequency.get(encode_key(dis))
@@ -476,10 +481,12 @@ def deviation_meanHealth_and_optimum(list_of_health, N, l):
 
 
 def deviation_bestHealth_and_optimum(list_of_health, l):
-    return bestHealth(list_of_health, l) - l
+    return l - bestHealth(list_of_health, l)
 
 
-def percent_polym_genes(list_of_health, l, N):
+def percent_polym_genes(pop, list_of_health, l, N):
+    if not list_of_health:
+        list_of_health = init_health_list(pop, l, N, 1)
     suma = 0
     all_ = l * N
     for ch_health in list_of_health:
@@ -501,31 +508,34 @@ def save_to_file(worksheet, dict, iterate):
         col = col + 1
 
 
-def save_to_file_the_end(attempt, iteration, list_of_health, N, l, pm, type_of_selection, X, Y, params_tour=-1, arr_pathogenic_iter=None):
-    row = []
-    row.append(attempt)
-    row.append(iteration)
-    row.append(pm)
+def save_to_file_the_end(pop, attempt, iteration, list_of_health, N, l, pm, type_of_selection, X, Y, init_type,
+                         params_tour=-1, arr_neutral_iter=None):
+    # Another variant with dynamically defining csv columns
+
+    csv_columns = ['attempt', 'method', 'iteration', 'N', 'l', 'X', 'Y', 'pm', 'selection', 'health_mean', 'health_best', 'deviation_meanHealth_and_optimum', 'deviation_bestHealth_and_optimum', 'percent_polym_genes', 'arr_neutral_iter']
+    row_map = {"attempt": attempt, "method": init_type, "N": N, "l": l, "X": X*100, "Y": Y*100, "iteration": iteration, "pm": pm}
     if type_of_selection == "Tournament":
         type_of_selection = type_of_selection + ' ' + str(params_tour)
-    row.append(type_of_selection)
-    row.append(l)
-    row.append(N)
-    row.append(X)
-    row.append(Y)
-    row.append(healthMean(N, l, list_of_health))
-    row.append(bestHealth(list_of_health, l))
-    row.append(deviation_meanHealth_and_optimum(list_of_health, N, l))
-    row.append(deviation_bestHealth_and_optimum(list_of_health, l))
-    row.append(percent_polym_genes(list_of_health, l, N))
-    if arr_pathogenic_iter:
-        row.append(arr_pathogenic_iter)
-    print(row)
-    file = open('data.csv', 'a')
-    with file:
-        writer = csv.writer(file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(row)
-    file.close()
+    row_map["selection"] = type_of_selection
+    if arr_neutral_iter:
+        row_map["arr_neutral_iter"] = arr_neutral_iter
+    row_map["health_mean"] = healthMean(N, l, list_of_health)
+    row_map["health_best"] = bestHealth(list_of_health, l)
+    row_map["deviation_meanHealth_and_optimum"] = deviation_meanHealth_and_optimum(list_of_health, N, l)
+    row_map["deviation_bestHealth_and_optimum"] = deviation_bestHealth_and_optimum(list_of_health, l)
+    row_map["percent_polym_genes"] = percent_polym_genes(pop, list_of_health, l, N)
+    csv_file = "data.csv"
+    try:
+        with open(csv_file, 'a') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+            if os.stat(csv_file).st_size == 0:
+                writer.writeheader()
+            writer.writerow(row_map)
+    except IOError:
+        print("I/O error")
+
+    print(row_map)
+
 
 
 def should_be_stopped(i, sum_mean_health, current_mean_health):
@@ -537,8 +547,9 @@ def should_be_stopped(i, sum_mean_health, current_mean_health):
     return False
 
 
+# TO CHANGE TO NEUTRAL
 # how many mutations we can do through the all iterations
-def num_of_pathogenic_genes(N, l, percentage):
+def num_of_neutral_genes(N, l, percentage):
     return N * l * percentage
 
 
@@ -550,11 +561,11 @@ def build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, att
     build_second_histogram(pop, health_list, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
 
 
-def manage_pathogenic_ch(i, arr_of_indexes, pathogenic_muted_counter, limit_pathogenic_mutation):
-    if pathogenic_muted_counter > limit_pathogenic_mutation:
+def manage_pathogenic_ch(i, arr_of_indexes, neutral_muted_counter, limit_neutral_mutation):
+    if neutral_muted_counter > limit_neutral_mutation:
         arr_of_indexes.append(i)
-        pathogenic_muted_counter = 0
-    return arr_of_indexes, pathogenic_muted_counter
+        neutral_muted_counter = 0
+    return arr_of_indexes, neutral_muted_counter
 
 
 def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, features=None):
@@ -565,12 +576,14 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, feat
     y = Y * 100
     mean_health_during_generations = []
     health_list = init_health_list(pop, l, N, init_type)
-    border_pathogenic_mutation = 0
-    arr_pathogenic_indexes = None
+
+    border_neutral_mutation = 0
+    muted_counter = 0
+    arr_neutral_indexes = None
 
     if features:
-        border_pathogenic_mutation = num_of_pathogenic_genes(N, l, Properties.CONST_PATHOGENIC_PERCENT)
-        arr_pathogenic_indexes = []
+        border_neutral_mutation = num_of_neutral_genes(N, l, Properties.CONST_NEUTRAL_PERCENT)
+        arr_neutral_indexes = []
 
     for i in range(1, Properties.CONST_STOP_ALGORITHM + 1):
 
@@ -580,39 +593,46 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, X, Y, pm, init_type, feat
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
 
         pop, health_list = selRoulette(pop, health_list, N)
-        pop, health_list, pathogenic_muted_counter = mutation(pop, pm, l, health_list, features)
+        pop, health_list, neutral_muted_counter = mutation(pop, pm, l, health_list, features)
 
         if features:
-            pathogenic_muted_counter += pathogenic_muted_counter
-            arr_pathogenic_indexes, pathogenic_muted_counter = manage_pathogenic_ch(i, arr_pathogenic_indexes, pathogenic_muted_counter, border_pathogenic_mutation)
-        current_mean_health = healthMean(N, l,  health_list)
+            muted_counter += neutral_muted_counter
+            arr_neutral_indexes, muted_counter = manage_pathogenic_ch(i, arr_neutral_indexes,
+                                                                              muted_counter,
+                                                                              border_neutral_mutation)
+        current_mean_health = healthMean(N, l, health_list)
         mean_health_during_generations.append(current_mean_health)
-
-        if np.abs(previous_mean_health - current_mean_health) < Properties.PRECISION and i > 1:
-            counter = counter + 1
-        else:
-            counter = 0
+        if init_type != 2:  # we don't need to stop algorithm because of similar mean health in case of the 2nd init type
+            if np.abs(previous_mean_health - current_mean_health) < Properties.PRECISION and i > 1:
+                counter = counter + 1
+            else:
+                counter = 0
+        # If mean health between populations doesn't differ much
         if counter >= 10:
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
-            build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type) # Distances to the wild type at the end of epoch
+            build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt,
+                                  init_type)  # Distances to the wild type at the end of epoch
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
-            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, X, Y, -1,
-                                 arr_pathogenic_indexes)
+            save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, X, Y, init_type, -1,
+                                 arr_neutral_indexes)
             break
+        # If final iteration
         if i == Properties.CONST_STOP_ALGORITHM:
             build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
             build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
-            save_to_file_the_end(attempt, i, health_list, N, l, pm, type_of_selection, x, y, -1,
-                                 arr_pathogenic_indexes)
+            save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, X, Y, init_type,  -1,
+                                 arr_neutral_indexes)
 
-#features = list_features_of_ch(100, 100)
-run_genetic_algorithm_with_roulette(65654, 100, 100, 0.5, 0.5, 0.000295, 2)
+features = list_features_of_ch(100, 100)
+run_genetic_algorithm_with_roulette(65654, 100, 100, 0.5, 0.5, 0.000295, 1)
+
 
 def mutation_probabilities_for_roulette(l):
     px = 1 / (10 * l)
-    #return [px + 0.2 * px, px - 0.2 * px, px / 2, px / 10, px / 100]
-    return [0.000507, 0.001113, 0.000452, 0.000295] # constants from the file
+    # return [px + 0.2 * px, px - 0.2 * px, px / 2, px / 10, px / 100]
+    return [0.000507, 0.001113, 0.000452, 0.000295]  # constants from the file
+
 
 def mutation_probabilities_for_tournament(t, l):
     if t == 2:
@@ -624,11 +644,11 @@ def mutation_probabilities_for_tournament(t, l):
         return [px + 0.2 * px, px - 0.2 * px, px / 2, px / 10, px / 100]
 
 
-
 def get_init_data():
-    N_1 = [100, 200, 800, 1000, 2000]
-    N_2 = [100, 200, 800, 1000, 2000]
-    l_N = [(10, N_1), (20, N_1), (80, N_1), (100, N_2), (200, N_2), (800, N_2), (1000, N_2), (2000, N_2), (8000, N_2)]
+    N_1 = [100, 200]  # , 800, 1000, 2000]
+    N_2 = [100, 200]  # , 800, 1000, 2000]
+    l_N = [(10, N_1), (20, N_1), (80, N_1), (100, N_2),
+           (200, N_2)]  # , (800, N_2), (1000, N_2), (2000, N_2), (8000, N_2)]
 
     # X and Y
     init_1 = [(0, 100)]
@@ -647,7 +667,8 @@ def perform_roulette():
     for type_ind, list_ratios in enumerate(pop_ratio):
         for x, y in list_ratios:
             for l, list_N in l_N:
-                arr_mutation_prob = mutation_probabilities_for_roulette(l) # ми ж хотіли використовувати контстанти з файлу
+                arr_mutation_prob = mutation_probabilities_for_roulette(
+                    l)  # ми ж хотіли використовувати контстанти з файлу
                 for n in list_N:
                     if type_ind == 2:  # 3 type of init
                         features = list_features_of_ch(n, l)

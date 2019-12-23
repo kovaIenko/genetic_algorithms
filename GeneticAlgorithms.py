@@ -436,19 +436,6 @@ def percent_polym_genes(pop, l):
     return Decimal(ideal.count(1))/Decimal(l)
 
 
-def save_to_file(worksheet, dict, iterate):
-    row = int(iterate / Properties.CONST_NUMB_GETTING_INFO) - 1
-    col = 0
-    if row == 0:
-        for key in dict.keys():
-            worksheet.write(row, col, key)
-            col = col + 1
-        row += 1
-    col = 0
-    for key in dict.keys():
-        worksheet.write(row, col, dict.get(key))
-        col = col + 1
-
 
 def save_to_file_the_end(pop, attempt, iteration, list_of_health, N, l, pm, type_of_selection, X, Y, init_type,
                          params_tour=-1, arr_neutral_iter=None):
@@ -567,6 +554,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
             save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type,  -1,
                                  arr_neutral_indexes)
 
+<<<<<<< Updated upstream
 def mutation_probabilities_for_roulette(l, N):
     if l == 10 & N == 100:
         px = 0.00111328125
@@ -577,6 +565,14 @@ def mutation_probabilities_for_roulette(l, N):
     else:
         px = 0.00045166015625
     return [px, px + 0.2*px, px - 0.2*px, px/2, px/10, px/100]
+=======
+
+# Consider N and l
+def mutation_probabilities_for_roulette(l):
+    px = 1 / (10 * l)
+    # return [px + 0.2 * px, px - 0.2 * px, px / 2, px / 10, px / 100]
+    return [0.000507, 0.001113, 0.000452, 0.000295]  # constants from the file
+>>>>>>> Stashed changes
 
 
 def mutation_probabilities_for_tournament(t, l):

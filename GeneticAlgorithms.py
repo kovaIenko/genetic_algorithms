@@ -554,26 +554,17 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
             save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type,  -1,
                                  arr_neutral_indexes)
 
-<<<<<<< Updated upstream
+# Consider N and l
 def mutation_probabilities_for_roulette(l, N):
-    if l == 10 & N == 100:
+    if l == 10 and N == 100:
         px = 0.00111328125
-    if l == 20 & N == 100:
+    elif l == 20 and N == 100:
         px = 0.00045166015625
-    if l == 10 & N == 200:
+    elif l == 10 and N == 200:
         px = 0.0005072021484375
     else:
         px = 0.00045166015625
     return [px, px + 0.2*px, px - 0.2*px, px/2, px/10, px/100]
-=======
-
-# Consider N and l
-def mutation_probabilities_for_roulette(l):
-    px = 1 / (10 * l)
-    # return [px + 0.2 * px, px - 0.2 * px, px / 2, px / 10, px / 100]
-    return [0.000507, 0.001113, 0.000452, 0.000295]  # constants from the file
->>>>>>> Stashed changes
-
 
 def mutation_probabilities_for_tournament(t, l):
     if t == 2:
@@ -616,8 +607,7 @@ def perform_roulette():
         for x, y in list_ratios:
             for l, list_N in l_N:
                 for n in list_N:
-                    arr_mutation_prob = mutation_probabilities_for_roulette(
-                        l, n)
+                    arr_mutation_prob = mutation_probabilities_for_roulette(l, n)
                     if type_ind == 2:  # 3 type of init
                         features = list_features_of_ch(n, l)
                     for pm in arr_mutation_prob:

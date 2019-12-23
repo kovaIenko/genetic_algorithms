@@ -575,7 +575,7 @@ def mutation_probabilities_for_roulette(l, N):
     if l == 10 & N == 200:
         px = 0.0005072021484375
     else:
-        px = 1 / (10 * l)
+        px = 0.00045166015625
     return [px, px + 0.2*px, px - 0.2*px, px/2, px/10, px/100]
 
 

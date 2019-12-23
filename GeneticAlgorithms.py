@@ -98,7 +98,7 @@ def turnOverGen(ch, indOfGen):
 def mutation(pop, percentage, l, list_of_health=None, features=None):
     count_ = len(pop) * l
     numbOfMut = int(round(count_ * percentage))
-    pathogenic_muted_counter = 0
+    neutral_muted_counter = 0
     for i in range(numbOfMut):
         index_of_ch, index_of_gen = generate_ch_and_gen(count_, l)
         if not features and list_of_health:
@@ -113,9 +113,9 @@ def mutation(pop, percentage, l, list_of_health=None, features=None):
         else:
             current_map = features[index_of_ch]
             type_ = getType(current_map, index_of_gen)
-            pathogenic_muted_counter = increment_neutral_counter(pathogenic_muted_counter, type_)
+            neutral_muted_counter = increment_neutral_counter(neutral_muted_counter, type_)
             list_of_health[index_of_ch] = health_of_3(l, current_map, type_)
-    return pop, list_of_health, pathogenic_muted_counter
+    return pop, list_of_health, neutral_muted_counter
 
 
 def increment_neutral_counter(counter, type):
@@ -436,19 +436,6 @@ def percent_polym_genes(pop, l):
     return Decimal(ideal.count(1))/Decimal(l)
 
 
-def save_to_file(worksheet, dict, iterate):
-    row = int(iterate / Properties.CONST_NUMB_GETTING_INFO) - 1
-    col = 0
-    if row == 0:
-        for key in dict.keys():
-            worksheet.write(row, col, key)
-            col = col + 1
-        row += 1
-    col = 0
-    for key in dict.keys():
-        worksheet.write(row, col, dict.get(key))
-        col = col + 1
-
 
 def save_to_file_the_end(pop, attempt, iteration, list_of_health, N, l, pm, type_of_selection, X, Y, init_type,
                          params_tour=-1, arr_neutral_iter=None):
@@ -503,7 +490,7 @@ def build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, att
     build_second_histogram(pop, health_list, N, l, i, x, y, type_of_selection, pm, attempt, init_type, polymorphic_perc)
 
 
-def manage_pathogenic_ch(i, arr_of_indexes, neutral_muted_counter, limit_neutral_mutation):
+def manage_neutral_ch(i, arr_of_indexes, neutral_muted_counter, limit_neutral_mutation):
     if neutral_muted_counter > limit_neutral_mutation:
         arr_of_indexes.append(i)
         neutral_muted_counter = 0
@@ -538,7 +525,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
 
         if features:
             muted_counter += neutral_muted_counter
-            arr_neutral_indexes, muted_counter = manage_pathogenic_ch(i, arr_neutral_indexes,
+            arr_neutral_indexes, muted_counter = manage_neutral_ch(i, arr_neutral_indexes,
                                                                               muted_counter,
                                                                               border_neutral_mutation)
         current_mean_health = healthMean(N, l, health_list)
@@ -567,17 +554,17 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
             save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type,  -1,
                                  arr_neutral_indexes)
 
+# Consider N and l
 def mutation_probabilities_for_roulette(l, N):
-    if l == 10 & N == 100:
+    if l == 10 and N == 100:
         px = 0.00111328125
-    if l == 20 & N == 100:
+    elif l == 20 and N == 100:
         px = 0.00045166015625
-    if l == 10 & N == 200:
+    elif l == 10 and N == 200:
         px = 0.0005072021484375
     else:
-        px = 1 / (10 * l)
+        px = 0.00045166015625
     return [px, px + 0.2*px, px - 0.2*px, px/2, px/10, px/100]
-
 
 def mutation_probabilities_for_tournament(t, l):
     if t == 2:
@@ -620,8 +607,7 @@ def perform_roulette():
         for x, y in list_ratios:
             for l, list_N in l_N:
                 for n in list_N:
-                    arr_mutation_prob = mutation_probabilities_for_roulette(
-                        l, n)
+                    arr_mutation_prob = mutation_probabilities_for_roulette(l, n)
                     if type_ind == 2:  # 3 type of init
                         features = list_features_of_ch(n, l)
                     for pm in arr_mutation_prob:
@@ -659,7 +645,7 @@ def run_genetic_algorithm_with_tournament(attempt, l, N, x, y, pm, init_type, t,
 
         if features:
             muted_counter += neutral_muted_counter
-            arr_neutral_indexes, muted_counter = manage_pathogenic_ch(i, arr_neutral_indexes,
+            arr_neutral_indexes, muted_counter = manage_neutral_ch(i, arr_neutral_indexes,
                                                                               muted_counter,
                                                                               border_neutral_mutation)
         current_mean_health = healthMean(N, l, health_list)

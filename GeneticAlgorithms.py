@@ -40,18 +40,17 @@ def health_of_1(ch):
     return np.count_nonzero(ch == 0)
 
 # the health func for third type of evaluation
-def health_of_3(ch, type_=None):
-    l = len(ch)
+def health_of_3(l, map, type_=None):
+    ln = len(map.get(Properties.CONST_TYPE_PATHOGENIC))
     if type_ == Properties.CONST_TYPE_NEUTRAL:
         return l
     elif type_ == Properties.CONST_TYPE_LETHAL:
         return 0.1
     else:
-        return l - l * Properties.CONST_K / 100
+        return l - ln
 
 def health_of_2(ch):
-    l = len(ch)
-    return l
+    return len(ch)
 
 def sort_sort(pop, list_of_health):
     if list_of_health:
@@ -120,7 +119,7 @@ def mutation(pop, percentage, l, list_of_health=None, features=None):
             current_map = features[index_of_ch]
             type_ = getType(current_map, index_of_gen)
             pathogenic_muted_counter = increment_neutral_counter(pathogenic_muted_counter, type_)
-            list_of_health[index_of_ch] = health_of_3(type_, l)
+            list_of_health[index_of_ch] = health_of_3(l, current_map, type_)
     return pop, list_of_health, pathogenic_muted_counter
 
 
@@ -153,10 +152,8 @@ def getType(current_map, ind_of_gen):
 
 # list of maps for each chromosome
 def list_features_of_ch(N, l):
-    maps = []
-    for ch in range(N):
-        maps.append(mutation_genes_distribution(l))
-    return maps
+    map = mutation_genes_distribution(l)
+    return [map]*N
 
 
 # Returns a map for a chromosome, where key is a mutation type and value is a list of genes positions
@@ -236,7 +233,6 @@ def mutation_genes_distribution(l, first_neutral_percent=0.135, any_neutral_perc
     assert (set(pathogenic_indices) & set(lethal_indices) == set())
     # return general_scheme, overall, specific_scheme # for testing
     return specific_scheme
-
 
 '''
 # Testing mutation_genes_distribution() method
@@ -484,14 +480,14 @@ def deviation_bestHealth_and_optimum(list_of_health, l):
     return l - bestHealth(list_of_health, l)
 
 
-def percent_polym_genes(pop, list_of_health, l, N):
-    if not list_of_health:
-        list_of_health = init_health_list(pop, l, N, 1)
-    suma = 0
-    all_ = l * N
-    for ch_health in list_of_health:
-        suma += l - ch_health
-    return suma * 100 / all_
+def percent_polym_genes(pop, l):
+    ideal = [None]*l
+    for i in range(0, l):
+        for ch in pop:
+            if ch[i] == 1:
+                ideal[i] = 1
+                break
+    return Decimal(ideal.count(1))/Decimal(l)
 
 
 def save_to_file(worksheet, dict, iterate):
@@ -639,10 +635,17 @@ def mutation_probabilities_for_tournament(t, l):
 
 
 def get_init_data():
-    N_1 = [100, 200]  # , 800, 1000, 2000]
-    N_2 = [100, 200]  # , 800, 1000, 2000]
-    l_N = [(10, N_1), (20, N_1), (80, N_1), (100, N_2),
-           (200, N_2)]  # , (800, N_2), (1000, N_2), (2000, N_2), (8000, N_2)]
+    N_1 = [100, 200, 800, 1000, 2000]
+    N_2 = [100, 200, 800, 1000, 2000, 5000, 10000, 20000, 80000]
+    l_N = [(10, N_1),
+           (20, N_1),
+           (80, N_1),
+           (100, N_2),
+           (200, N_2),
+           (800, N_2),
+           (1000, N_2),
+           (2000, N_2),
+           (8000, N_2)]
 
     # X and Y
     init_1 = [(0, 100)]
@@ -668,6 +671,10 @@ def perform_roulette():
                         features = list_features_of_ch(n, l)
                     for pm in arr_mutation_prob:
                         for attempt in range(3):
-                          run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y , pm, type_ind+1, features)
+                            run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y, pm, type_ind + 1, features)
 
-perform_roulette()
+
+#perform_roulette()
+
+#features = list_features_of_ch(100, 100)
+#run_genetic_algorithm_with_roulette(0 + 1, 100, 100, 100, 0, 0.000113, 3, features)

@@ -286,6 +286,27 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
     ax.set_title('Polymorphic genes: ' + str(polymorphic_perc) + '%')
     plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
     plt.xticks(list(distances.keys()))
+    # To avoid overlapping at X axis
+    if l > 20 and l <= 80:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 5 != 0:
+                label.set_visible(False)
+    elif l > 80 and l < 400:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 10 != 0:
+                label.set_visible(False)
+    elif l >= 400 and l < 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 20 != 0:
+                label.set_visible(False)
+    elif l >= 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 50 != 0:
+                label.set_visible(False)
     plt.savefig(results_dir + "/X={0};Y={1};iter={2};pm={3}.png".format(x, y, iter_num, pm))
     plt.clf()
     plt.close()
@@ -309,6 +330,27 @@ def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_typ
     ax.set_title('Polymorphic genes: ' + str(polymorphic_perc) + '%')
     plt.bar(list(distances.keys()), distances.values(), color='red', width=0.9)
     plt.xticks(list(distances.keys()))
+    # To avoid overlapping at X axis
+    if l > 20 and l <= 80:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 5 != 0:
+                label.set_visible(False)
+    elif l > 80 and l < 400:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 10 != 0:
+                label.set_visible(False)
+    elif l >= 400 and l < 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 20 != 0:
+                label.set_visible(False)
+    elif l >= 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 50 != 0:
+                label.set_visible(False)
     plt.savefig(results_dir + "/X={0};Y={1};iter={2};pm={3}.png".format(x, y, iter_num, pm))
     plt.clf()
     plt.close()
@@ -332,9 +374,31 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
     ax.set_title('Polymorphic genes: ' + str(polymorphic_perc) + '%')
     plt.bar(list(distances.keys()), distances.values(), color='blue', width=0.9)
     plt.xticks(list(distances.keys()))
+    # To avoid overlapping at X axis
+    if l > 20 and l <= 80:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 5 != 0:
+                label.set_visible(False)
+    elif l > 80 and l < 400:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 10 != 0:
+                label.set_visible(False)
+    elif l >= 400 and l < 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 20 != 0:
+                label.set_visible(False)
+    elif l >= 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 50 != 0:
+                label.set_visible(False)
     plt.savefig(results_dir + "/X={0};Y={1};=iter={2};pm={3}.png".format(x, y, iter_num, pm))
     plt.clf()
     plt.close()
+
 
 
 # Build a line plot with mean health for each iteration and save to png

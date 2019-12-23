@@ -537,8 +537,8 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
                 counter = 0
         # If mean health between populations doesn't differ much
         if counter >= 10:
-            polymorphic_genes_perc = percent_polym_genes(pop, l)
-            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type, polymorphic_genes_perc*100)
+            polymorphic_genes_perc = percent_polym_genes(pop, l)*100
+            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type, polymorphic_genes_perc)
             build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt,
                                   init_type, polymorphic_genes_perc)  # Distances to the wild type at the end of epoch
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
@@ -547,8 +547,8 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
             break
         # If final iteration
         if i == Properties.CONST_STOP_ALGORITHM:
-            polymorphic_genes_perc = percent_polym_genes(pop, l)
-            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type, polymorphic_genes_perc*100)
+            polymorphic_genes_perc = percent_polym_genes(pop, l)*100
+            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type, polymorphic_genes_perc)
             build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type, polymorphic_genes_perc)
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
             save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type,  -1,

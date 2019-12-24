@@ -674,14 +674,16 @@ def mutation_probabilities_for_roulette(px):
     '''
     return [px + 0.2*px, px - 0.2*px, px/2, px/10, px/100]
 
-def mutation_probabilities_for_tournament(t, l):
+def mutation_probabilities_for_tournament(px):
+    '''
     if t == 2:
         return [0.001743, 0.000861, 0.00085, 0.000544]
     if t == 12:
         return [0.000574, 0.001749, 0.000881]
     if t == 4:
         px = 1 / (10 * l)
-        return [px + 0.2 * px, px - 0.2 * px, px / 2, px / 10, px / 100]
+    '''
+    return [px + 0.2 * px, px - 0.2 * px, px / 2, px / 10, px / 100]
 
 
 def get_init_data():
@@ -809,7 +811,7 @@ def perform_tournament():
                                 px = px * 0.8
                                 counter_ += 1
                         print("While we were searching the convergence {0} steps were done".format(counter_))
-                        arr_mutation_prob = mutation_probabilities_for_roulette(px)
+                        arr_mutation_prob = mutation_probabilities_for_tournament(px)
                         for pm in arr_mutation_prob:
                             for attempt in range(Properties.CONST_NUMB_OF_ATTEMPTS):
                                 run_genetic_algorithm_with_tournament(attempt + 1, l, n, x, y, pm, type_ind + 1, t,

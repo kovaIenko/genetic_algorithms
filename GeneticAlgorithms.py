@@ -270,8 +270,10 @@ def tournament_selection(pop, health_list, t):
 # Save a histogram to png file with all the parameters specified
 # (a histogram with frequencies of pairwise Hamming distances between chromosomes)
 
-def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc):
+def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, t):
     script_dir = os.path.dirname(__file__) + '/Plots'
+    if t != -1:
+        selection_type = selection_type +'-' + t
     results_dir = os.path.join(script_dir,
                                'HammingHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type,
                                                                                                         attempt,
@@ -310,9 +312,9 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
     plt.clf()
     plt.close()
     hist_type = 'PairwiseHamming'
-    save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type)
+    save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type, t)
 
-def save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type):
+def save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type, t=-1):
     script_dir = os.path.dirname(__file__) + '/Plots/'
     row_map = distances
     row_map['iteration'] = iter_num
@@ -321,6 +323,8 @@ def save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type,
     row_map['pm'] = pm
     row_map['init_type'] = init_type
     row_map['polymorphic_perc'] = polymorphic_perc
+    if t != -1:
+        selection_type = selection_type + '-' + t
     row_map['selection_type'] = selection_type
     row_map['N'] = N
     row_map['l'] = l
@@ -344,8 +348,10 @@ def save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type,
 # Save a histogram to png file with all the parameters specified
 # (a histogram with frequencies of Hamming distances to the optimal chromosome from each chromosome in the population)
 
-def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc):
+def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, t=-1):
     script_dir = os.path.dirname(__file__) + '/Plots'
+    if t != -1:
+        selection_type = selection_type + '-' + t
     results_dir = os.path.join(script_dir,
                                'OptimalHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type,
                                                                                                         attempt,
@@ -384,14 +390,16 @@ def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_typ
     plt.clf()
     plt.close()
     hist_type = 'OptimalHamming'
-    save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type)
+    save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type, t)
 
 
 # Save a histogram to png file with all the parameters specified
 # (a histogram with frequencies of Hamming distances to the optimal chromosome from each chromosome in the population)
 
-def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc):
+def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, t=-1):
     script_dir = os.path.dirname(__file__) + '/Plots'
+    if t != -1:
+        selection_type = selection_type + '-' + t
     results_dir = os.path.join(script_dir,
                                'WildTypeHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type,
                                                                                                          attempt,
@@ -430,14 +438,16 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
     plt.clf()
     plt.close()
     hist_type = 'WildType'
-    save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type)
+    save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type, t)
 
 
 
 # Build a line plot with mean health for each iteration and save to png
 
-def build_line_graph(health_values, N, l, x, y, selection_type, pm, attempt, init_type):
+def build_line_graph(health_values, N, l, x, y, selection_type, pm, attempt, init_type, t=-1):
     script_dir = os.path.dirname(__file__) + '/Plots'
+    if t != -1:
+        selection_type = selection_type + '-' + t
     results_dir = os.path.join(script_dir,
                                'LineGraph;InitType={0};Attempt={1};Selection={2},N={3};l={4};/'.format(init_type,
                                                                                                        attempt,
@@ -582,9 +592,9 @@ def num_of_neutral_genes(N, l, percentage):
 # At each h iterations we build only histograms for pairwise Hamming distances & Hamming distances to the optimal
 # chromosome
 
-def build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type, polymorphic_perc):
-    build_first_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type, polymorphic_perc)
-    build_second_histogram(pop, health_list, N, l, i, x, y, type_of_selection, pm, attempt, init_type, polymorphic_perc)
+def build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type, polymorphic_perc, t=-1):
+    build_first_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type, polymorphic_perc, t)
+    build_second_histogram(pop, health_list, N, l, i, x, y, type_of_selection, pm, attempt, init_type, polymorphic_perc, t)
 
 
 def manage_neutral_ch(i, arr_of_indexes, neutral_muted_counter, limit_neutral_mutation):
@@ -717,8 +727,7 @@ def perform_roulette():
                             run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y, pm, type_ind + 1, features)
 
 
-perform_roulette()
-
+#perform_roulette()
 
 def run_genetic_algorithm_with_tournament(attempt, l, N, x, y, pm, init_type, t, features=None):
     type_of_selection = 'Tournament'
@@ -730,7 +739,7 @@ def run_genetic_algorithm_with_tournament(attempt, l, N, x, y, pm, init_type, t,
     border_neutral_mutation = 0
     muted_counter = 0
     arr_neutral_indexes = None
-
+    result = False
     if features:
         border_neutral_mutation = num_of_neutral_genes(N, l, Properties.CONST_NEUTRAL_PERCENT)
         arr_neutral_indexes = []
@@ -739,8 +748,10 @@ def run_genetic_algorithm_with_tournament(attempt, l, N, x, y, pm, init_type, t,
 
         previous_mean_health = healthMean(N, l, health_list) if init_type != 2 else l
 
-        if i % Properties.CONST_FREQUENCY_PRINT_DIAGRAM == 0:
-            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
+        if i % Properties.CONST_FREQUENCY_PRINT_DIAGRAM == 0 and attempt != -1:
+            polymorphic_genes_perc = percent_polym_genes(pop, l)
+            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type, polymorphic_genes_perc*100, t)
+
         pop, health_list = tournament_selection(pop, health_list, t)
 
         pop, health_list, neutral_muted_counter = mutation(pop, pm, l, health_list, features)
@@ -752,48 +763,61 @@ def run_genetic_algorithm_with_tournament(attempt, l, N, x, y, pm, init_type, t,
                                                                               border_neutral_mutation)
         current_mean_health = healthMean(N, l, health_list)
         mean_health_during_generations.append(current_mean_health)
-        if init_type != 2:  # we don't need to stop algorithm because of similar mean health in case of the 2nd init type
+        if init_type != 2:
             if np.abs(previous_mean_health - current_mean_health) < Properties.PRECISION and i > 1:
                 counter = counter + 1
             else:
                 counter = 0
         # If mean health between populations doesn't differ much
         if counter >= 10:
-            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
+            polymorphic_genes_perc = percent_polym_genes(pop, l)*100
+            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type, polymorphic_genes_perc, t)
             build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt,
-                                  init_type)  # Distances to the wild type at the end of epoch
-            build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
+                                  init_type, polymorphic_genes_perc, t)  # Distances to the wild type at the end of epoch
+            build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type, t)
             save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type, t,
                                  arr_neutral_indexes)
-            break
+            return True
         # If final iteration
-        if i == Properties.CONST_STOP_ALGORITHM:
-            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type)
-            build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type)
-            build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
+        if i == Properties.CONST_STOP_ALGORITHM and attempt != -1:
+            polymorphic_genes_perc = percent_polym_genes(pop, l)*100
+            build_histograms(pop, N, l, i, x, y, type_of_selection, pm, health_list, attempt, init_type, polymorphic_genes_perc, t)
+            build_third_histogram(pop, N, l, i, x, y, type_of_selection, pm, attempt, init_type, polymorphic_genes_perc, t)
+            build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type, t)
             save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type,  t,
                                  arr_neutral_indexes)
+    return False
 
 
 def perform_tournament():
     l_N, pop_ratio = get_init_data()
-    t_params = [2, 4, 12]
     features = None
+    t_params = [2, 4, 12]
     for t in t_params:
         for type_ind, list_ratios in enumerate(pop_ratio):
             for x, y in list_ratios:
                 for l, list_N in l_N:
-                    arr_mutation_prob = mutation_probabilities_for_tournament(t, l)
                     for n in list_N:
+                        #
                         if type_ind == 2:  # 3 type of init
                             features = list_features_of_ch(n, l)
+                        px = 1 / (10 * l)
+                        convergence = False
+                        counter_ = 0
+                        while not convergence:
+                            convergence = run_genetic_algorithm_with_tournament(-1, l, n, x, y, px, type_ind + 1, t,
+                                                                              features)
+                            if not convergence:
+                                px = px * 0.8
+                                counter_ += 1
+                        print("While we were searching the convergence {0} steps were done".format(counter_))
+                        arr_mutation_prob = mutation_probabilities_for_roulette(px)
                         for pm in arr_mutation_prob:
-                            for attempt in range(3):
-                                run_genetic_algorithm_with_tournament(attempt + 1, l, n, x, y, pm, type_ind + 1, t, features)
+                            for attempt in range(Properties.CONST_NUMB_OF_ATTEMPTS):
+                                run_genetic_algorithm_with_tournament(attempt + 1, l, n, x, y, pm, type_ind + 1, t,
+                                                                      features)
 
-
-#perform_tournament()
-
+perform_tournament()
 
 # Testing tournament selection
 '''

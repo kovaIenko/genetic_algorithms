@@ -309,6 +309,36 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
     plt.savefig(results_dir + "/X={0};Y={1};iter={2};pm={3}.png".format(x, y, iter_num, pm))
     plt.clf()
     plt.close()
+    hist_type = 'PairwiseHamming'
+    save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type)
+
+def save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type):
+    script_dir = os.path.dirname(__file__) + '/Plots/'
+    row_map = distances
+    row_map['iteration'] = iter_num
+    row_map['x'] = x
+    row_map['y'] = y
+    row_map['pm'] = pm
+    row_map['init_type'] = init_type
+    row_map['polymorphic_perc'] = polymorphic_perc
+    row_map['selection_type'] = selection_type
+    row_map['N'] = N
+    row_map['l'] = l
+    if hist_type == 'PairwiseHamming':
+        csv_file = script_dir + "/pairwise_hamming_hist_data.csv"
+    elif hist_type == 'OptimalHamming':
+        csv_file = script_dir + "/optimal_hamming_hist_data.csv"
+    elif hist_type == 'WildType':
+        csv_file = script_dir + "/wild_type_hist_data.csv"
+    try:
+        with open(csv_file, 'a') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=list(row_map.keys()))
+            if os.stat(csv_file).st_size == 0:
+                writer.writeheader()
+            writer.writerow(row_map)
+    except IOError:
+        print("I/O error")
+
 
 
 # Save a histogram to png file with all the parameters specified
@@ -353,6 +383,8 @@ def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_typ
     plt.savefig(results_dir + "/X={0};Y={1};iter={2};pm={3}.png".format(x, y, iter_num, pm))
     plt.clf()
     plt.close()
+    hist_type = 'OptimalHamming'
+    save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type)
 
 
 # Save a histogram to png file with all the parameters specified
@@ -397,6 +429,8 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
     plt.savefig(results_dir + "/X={0};Y={1};=iter={2};pm={3}.png".format(x, y, iter_num, pm))
     plt.clf()
     plt.close()
+    hist_type = 'WildType'
+    save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, hist_type)
 
 
 
@@ -676,7 +710,7 @@ def perform_roulette():
                         if not convergence:
                             px = px * 0.8
                             counter_ += 1
-                    print("While we were searching the convergence " + str(counter_) + " were done steps")
+                    print("While we were searching the convergence {0} steps were done".format(counter_))
                     arr_mutation_prob = mutation_probabilities_for_roulette(px)
                     for pm in arr_mutation_prob:
                         for attempt in range(Properties.CONST_NUMB_OF_ATTEMPTS):

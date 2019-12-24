@@ -273,7 +273,7 @@ def tournament_selection(pop, health_list, t):
 def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, t):
     script_dir = os.path.dirname(__file__) + '/Plots'
     if t != -1:
-        selection_type = selection_type +'-' + t
+        selection_type = selection_type + '-' + str(t)
     results_dir = os.path.join(script_dir,
                                'HammingHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type,
                                                                                                         attempt,
@@ -323,8 +323,6 @@ def save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type,
     row_map['pm'] = pm
     row_map['init_type'] = init_type
     row_map['polymorphic_perc'] = polymorphic_perc
-    if t != -1:
-        selection_type = selection_type + '-' + t
     row_map['selection_type'] = selection_type
     row_map['N'] = N
     row_map['l'] = l
@@ -351,7 +349,7 @@ def save_to_file_histogram_data(distances, N, l, iter_num, x, y, selection_type,
 def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, t=-1):
     script_dir = os.path.dirname(__file__) + '/Plots'
     if t != -1:
-        selection_type = selection_type + '-' + t
+        selection_type = selection_type + '-' + str(t)
     results_dir = os.path.join(script_dir,
                                'OptimalHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type,
                                                                                                         attempt,
@@ -399,7 +397,7 @@ def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_typ
 def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt, init_type, polymorphic_perc, t=-1):
     script_dir = os.path.dirname(__file__) + '/Plots'
     if t != -1:
-        selection_type = selection_type + '-' + t
+        selection_type = selection_type + '-' + str(t)
     results_dir = os.path.join(script_dir,
                                'WildTypeHist;InitType={0};Attempt={1};Selection={2},N={3};l={4}/'.format(init_type,
                                                                                                          attempt,
@@ -447,7 +445,7 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
 def build_line_graph(health_values, N, l, x, y, selection_type, pm, attempt, init_type, t=-1):
     script_dir = os.path.dirname(__file__) + '/Plots'
     if t != -1:
-        selection_type = selection_type + '-' + t
+        selection_type = selection_type + '-' + str(t)
     results_dir = os.path.join(script_dir,
                                'LineGraph;InitType={0};Attempt={1};Selection={2},N={3};l={4};/'.format(init_type,
                                                                                                        attempt,

@@ -571,7 +571,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
     border_neutral_mutation = 0
     muted_counter = 0
     arr_neutral_indexes = None
-
+    result = False
     if features:
         border_neutral_mutation = num_of_neutral_genes(N, l, Properties.CONST_NEUTRAL_PERCENT)
         arr_neutral_indexes = []
@@ -608,7 +608,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
             save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type, -1,
                                  arr_neutral_indexes)
-            break
+            return True
         # If final iteration
         if i == Properties.CONST_STOP_ALGORITHM:
             polymorphic_genes_perc = percent_polym_genes(pop, l)*100
@@ -617,7 +617,7 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
             save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type,  -1,
                                  arr_neutral_indexes)
-        return i
+    return False
 
 # Consider N and l
 def mutation_probabilities_for_roulette(px):
@@ -678,27 +678,19 @@ def perform_roulette():
         for x, y in list_ratios:
             for l, list_N in l_N:
                 for n in list_N:
-                    #arr_mutation_prob = mutation_probabilities_for_roulette(px)
+                    #
                     if type_ind == 2:  # 3 type of init
                         features = list_features_of_ch(n, l)
                     px = 1/(10*l)
-
-                    for attempt in range(3):
-                        last_iteration = run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y, px, type_ind + 1,
-                                                                             features)
-                        if last_iteration == Properties.CONST_STOP_ALGORITHM:
-                            px = px - 0.2 * px
-                            break
-                        else:
-                            # save to file best px for l and N
-                            pm_array = mutation_probabilities_for_roulette(px)
-                            for attempt in range(3):
-                                run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y, px,
-                                                                    type_ind + 1, features)
-                   # for pm in arr_mutation_prob:
-
-
-
+                    convergence = False
+                    while not convergence:
+                        convergence = run_genetic_algorithm_with_roulette(-1, l, n, x, y, px, type_ind + 1, features)
+                        if not convergence:
+                            px = px * 0.8
+                    arr_mutation_prob = mutation_probabilities_for_roulette(px)
+                    for pm in arr_mutation_prob:
+                        for attempt in range(Properties.CONST_NUMB_OF_ATTEMPTS):
+                            run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y, pm, type_ind + 1, features)
 
 
 perform_roulette()

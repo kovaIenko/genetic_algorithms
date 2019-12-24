@@ -286,6 +286,27 @@ def build_first_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
     ax.set_title('Polymorphic genes: ' + str(polymorphic_perc) + '%')
     plt.bar(list(distances.keys()), distances.values(), color='g', width=0.9)
     plt.xticks(list(distances.keys()))
+    # To avoid overlapping at X axis
+    if l > 20 and l <= 80:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 5 != 0:
+                label.set_visible(False)
+    elif l > 80 and l < 400:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 10 != 0:
+                label.set_visible(False)
+    elif l >= 400 and l < 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 20 != 0:
+                label.set_visible(False)
+    elif l >= 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 50 != 0:
+                label.set_visible(False)
     plt.savefig(results_dir + "/X={0};Y={1};iter={2};pm={3}.png".format(x, y, iter_num, pm))
     plt.clf()
     plt.close()
@@ -309,6 +330,27 @@ def build_second_histogram(pop, list_health, N, l, iter_num, x, y, selection_typ
     ax.set_title('Polymorphic genes: ' + str(polymorphic_perc) + '%')
     plt.bar(list(distances.keys()), distances.values(), color='red', width=0.9)
     plt.xticks(list(distances.keys()))
+    # To avoid overlapping at X axis
+    if l > 20 and l <= 80:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 5 != 0:
+                label.set_visible(False)
+    elif l > 80 and l < 400:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 10 != 0:
+                label.set_visible(False)
+    elif l >= 400 and l < 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 20 != 0:
+                label.set_visible(False)
+    elif l >= 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 50 != 0:
+                label.set_visible(False)
     plt.savefig(results_dir + "/X={0};Y={1};iter={2};pm={3}.png".format(x, y, iter_num, pm))
     plt.clf()
     plt.close()
@@ -332,9 +374,31 @@ def build_third_histogram(pop, N, l, iter_num, x, y, selection_type, pm, attempt
     ax.set_title('Polymorphic genes: ' + str(polymorphic_perc) + '%')
     plt.bar(list(distances.keys()), distances.values(), color='blue', width=0.9)
     plt.xticks(list(distances.keys()))
+    # To avoid overlapping at X axis
+    if l > 20 and l <= 80:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 5 != 0:
+                label.set_visible(False)
+    elif l > 80 and l < 400:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 10 != 0:
+                label.set_visible(False)
+    elif l >= 400 and l < 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 20 != 0:
+                label.set_visible(False)
+    elif l >= 1000:
+        plt.xticks(rotation=90)
+        for i, label in enumerate(ax.get_xaxis().get_ticklabels()):
+            if i % 50 != 0:
+                label.set_visible(False)
     plt.savefig(results_dir + "/X={0};Y={1};=iter={2};pm={3}.png".format(x, y, iter_num, pm))
     plt.clf()
     plt.close()
+
 
 
 # Build a line plot with mean health for each iteration and save to png
@@ -553,9 +617,11 @@ def run_genetic_algorithm_with_roulette(attempt, l, N, x, y, pm, init_type, feat
             build_line_graph(mean_health_during_generations, N, l, x, y, type_of_selection, pm, attempt, init_type)
             save_to_file_the_end(pop, attempt, i, health_list, N, l, pm, type_of_selection, x, y, init_type,  -1,
                                  arr_neutral_indexes)
+        return i
 
 # Consider N and l
-def mutation_probabilities_for_roulette(l, N):
+def mutation_probabilities_for_roulette(px):
+    '''
     if l == 10 and N == 100:
         px = 0.00111328125
     elif l == 20 and N == 100:
@@ -563,8 +629,9 @@ def mutation_probabilities_for_roulette(l, N):
     elif l == 10 and N == 200:
         px = 0.0005072021484375
     else:
-        px = 0.00045166015625
-    return [px, px + 0.2*px, px - 0.2*px, px/2, px/10, px/100]
+        px = 1/(10*l)
+    '''
+    return [px + 0.2*px, px - 0.2*px, px/2, px/10, px/100]
 
 def mutation_probabilities_for_tournament(t, l):
     if t == 2:
@@ -611,12 +678,27 @@ def perform_roulette():
         for x, y in list_ratios:
             for l, list_N in l_N:
                 for n in list_N:
-                    arr_mutation_prob = mutation_probabilities_for_roulette(l, n)
+                    #arr_mutation_prob = mutation_probabilities_for_roulette(px)
                     if type_ind == 2:  # 3 type of init
                         features = list_features_of_ch(n, l)
-                    for pm in arr_mutation_prob:
-                        for attempt in range(3):
-                            run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y, pm, type_ind + 1, features)
+                    px = 1/(10*l)
+
+                    for attempt in range(3):
+                        last_iteration = run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y, px, type_ind + 1,
+                                                                             features)
+                        if last_iteration == Properties.CONST_STOP_ALGORITHM:
+                            px = px - 0.2 * px
+                            break
+                        else:
+                            # save to file best px for l and N
+                            pm_array = mutation_probabilities_for_roulette(px)
+                            for attempt in range(3):
+                                run_genetic_algorithm_with_roulette(attempt + 1, l, n, x, y, px,
+                                                                    type_ind + 1, features)
+                   # for pm in arr_mutation_prob:
+
+
+
 
 
 perform_roulette()
